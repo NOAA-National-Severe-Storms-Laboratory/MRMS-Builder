@@ -132,15 +132,15 @@ def getPassword():
 
 def buildhelper(checkout, buildthird, buildmain):
   """ Build stuff in order by flags """
-  #global user
-  #global folder
-
   # Folder wanted
   folder = getBuildFolder()
 
+  # Make sure user set always 
+  user = getpass.getuser()
+
   # User/password for SVN and checkout
   if checkout:
-    user = getUserName(getpass.getuser())
+    user = getUserName(user)
     b.setupSVN(user, False) # Change user now
     password = getPassword()
     print(blue+"Checking out code..."+coff)
@@ -163,8 +163,6 @@ def buildhelper(checkout, buildthird, buildmain):
 
 def buildMRMS():
   """ Build MRMS by checking out SVN with questions """
-  #global user
-  #global folder
 
   user = getpass.getuser()
   b.setupSVN(user, False)
