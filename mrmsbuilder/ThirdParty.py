@@ -60,6 +60,18 @@ class buildLIBPNG(BuildThirdZip):
     b.run("make")
     b.run("make install")
 
+class buildHMRGW2(BuildThirdZip):
+  """ Build HMRGW2 library to link hydro and w2 """
+  def copy(self, t):
+    b.run("cp "+self.key+".tar.gz "+t)
+  def unzip(self):
+    b.run("tar xvf "+self.key+".tar.gz")
+  def build(self, t):
+    b.chdir(self.key)
+    b.run("./autogen.sh --prefix="+t+" --enable-shared")
+    b.run("make")
+    b.run("make install")
+
 class buildG2CLIB(BuildThirdZip):
   """ Build g2clib library """
   def copy(self, t):
@@ -211,6 +223,7 @@ def getBuilders(l, t):
   #myBuilders.append(buildNETCDFPLUS("netcdf-cxx4-4.3.0", t))
   l.append(buildNETCDF("netcdf-4.3.3.1", t))
   l.append(buildNETCDFPLUS("netcdf-cxx-4.2", t))
+  l.append(buildHMRGW2("hmrgw2_lib-05102017", t))
 
   # The monster at the end...
   l.append(buildGDAL("gdal-2.1.3", t))
