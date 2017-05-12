@@ -1,25 +1,27 @@
-NSSL Package for building MRMS from a source checkout
+NSSL Package for building MRMS.
+Robert Toomey May 2017
 
-This interactive script will help you build a fresh checkout
+INSTRUCTIONS: 
+1. Type "./build.py" to run the script
+2. Update your shell env to have your proper SVN settings if 
+   needed.
+
+  This interactive script will help you build a fresh checkout
 you can use to code MRMS.
-
-After building a set of SVN/environments settings will be given,
-you will have to source those/add to your environment to run
-or run svn commands.
+  After building a set of SVN/environments settings will be given,
+you will have to source those/add to your environment if you
+want to change code and check it in.  You can still snv diff, etc.
+by default.
 
 --------------------------------------------------------------
-INSTRUCTIONS: (These will change as script is developed and 
-built further)
 
-Type "./build.py" in this directory
+2017-05-12: Initial checkin of builder package.
+  Currently the script always tries to build wg, which means
+  the w2tools build will end if you're missing gtk and opengl
+  for display. If you are ok with this you can still build the
+  w2convertors by going into that directory and typing make 
+  install.
 
-First, build a third party folder..use one of the defaults or
-type a folder like /mybuild
-
-Second, if the third party builds fully, rerun the script and
-choose the 'build over third' option. Use the same folder name
-as when building the third party.  
-This will then check out and build the code
 --------------------------------------------------------------
 
 Robert Toomey
