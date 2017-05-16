@@ -31,48 +31,47 @@ def pathDualpol(target):
   else:
     print "Not setting path dualpol"
 
-class BuildThirdZip(Builder):
-  """ build a third party zip """
+class BuildThird(Builder):
+  """ build a third party from compressed source and stock configure """
   def clean(self):
     b.runOptional("rm -rf "+self.key)
+  def build(self, t):
+    b.chdir(self.key)
+    b.run("./configure --prefix="+t+" --enable-shared")
+    b.run("make")
+    b.run("make install")
 
-class buildJASPER(BuildThirdZip):
+class BuildTar(BuildThird):
+  """ build a third party from a stock tar.gz """
+  def copy(self, t):
+    b.run("cp "+self.key+".tar.gz "+t)
+  def unzip(self):
+    b.run("tar xvf "+self.key+".tar.gz")
+
+class buildProj4(BuildTar):
+  """ Build proj4 library """
+  pass
+
+class buildJASPER(BuildThird):
   """ Build Jasper library """
   def copy(self, t):
     b.run("cp "+self.key+".zip "+t)
   def unzip(self):
     b.run("unzip "+self.key+".zip")
-  def build(self, t):
-    b.chdir(self.key)
-    b.run("./configure --prefix="+t+" --enable-shared")
-    b.run("make")
-    b.run("make install")
 
-class buildLIBPNG(BuildThirdZip):
+class buildLIBPNG(BuildTar):
   """ Build libpng library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
-  def build(self, t):
-    b.chdir(self.key)
-    b.run("./configure --prefix="+t+" --enable-shared")
-    b.run("make")
-    b.run("make install")
+  pass
 
-class buildHMRGW2(BuildThirdZip):
+class buildHMRGW2(BuildTar):
   """ Build HMRGW2 library to link hydro and w2 """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     b.run("./autogen.sh --prefix="+t+" --enable-shared")
     b.run("make")
     b.run("make install")
 
-class buildG2CLIB(BuildThirdZip):
+class buildG2CLIB(BuildThird):
   """ Build g2clib library """
   def copy(self, t):
     b.run("cp "+self.key+".tar "+t)
@@ -94,36 +93,16 @@ class buildG2CLIB(BuildThirdZip):
     b.run("cp libg2c*a "+self.target+"/lib")
     b.run("cp *.h "+self.target+"/include")
 
-class buildUDUNITS(BuildThirdZip):
+class buildUDUNITS(BuildTar):
   """ Build udunits library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
-  def build(self, t):
-    b.chdir(self.key)
-    b.run("./configure --prefix="+t+" --enable-shared")
-    b.run("make")
-    b.run("make install")
+  pass
 
-class buildNETCDF(BuildThirdZip):
+class buildNETCDF(BuildTar):
   """ Build netcdf library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
-  def build(self, t):
-    b.chdir(self.key)
-    b.run("./configure --prefix="+t+" --enable-shared")
-    b.run("make")
-    b.run("make install")
+  pass
 
-class buildNETCDFPLUS(BuildThirdZip):
+class buildNETCDFPLUS(BuildTar):
   """ Build netcdf c++ library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     # f***** brain dead netcdfc++.  We really need to kill this library from w2 like in RAMP
@@ -134,12 +113,8 @@ class buildNETCDFPLUS(BuildThirdZip):
     b.run("make")
     b.run("make install")
 
-class buildORPGINFR(BuildThirdZip):
+class buildORPGINFR(BuildTar):
   """ Build orpginfr library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     b.run("./autogen.sh --prefix="+t+" --enable-shared")
@@ -147,12 +122,8 @@ class buildORPGINFR(BuildThirdZip):
     b.run("make")
     b.run("make install")
 
-class buildGDAL(BuildThirdZip):
+class buildGDAL(BuildTar):
   """ Build gdal library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     #b.run("./autogen.sh --prefix="+self.target+" --enable-shared")
@@ -165,23 +136,15 @@ class buildGDAL(BuildThirdZip):
     b.run("make")
     b.run("make install")
 
-class buildDualpol(BuildThirdZip):
+class buildDualpol(BuildTar):
   """ Build base dualpol library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     b.run("./autogen.sh --prefix="+t+" ")
     b.run("make install")
 
-class buildDualpolRRDD(BuildThirdZip):
+class buildDualpolRRDD(BuildTar):
   """ Build dualpol RRDD library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     pathDualpol(self.target)
@@ -193,12 +156,8 @@ class buildDualpolRRDD(BuildThirdZip):
     b.run("make")
     b.run("make install")
 
-class buildDualpolQPE(BuildThirdZip):
+class buildDualpolQPE(BuildTar):
   """ Build base dualpol QPE library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
-  def unzip(self):
-    b.run("tar xvf "+self.key+".tar.gz")
   def build(self, t):
     b.chdir(self.key)
     pathDualpol(self.target)
@@ -214,6 +173,7 @@ def getBuilders(l, t):
   l.append(buildG2CLIB("g2clib-1.6.0", t))
   l.append(buildUDUNITS("udunits-2.2.24", t))
   l.append(buildORPGINFR("orpginfr-3.0.1", t))
+  l.append(buildProj4("proj-4.9.3", t))
 
   l.append(buildDualpol("dualpol-04182017", t))
   l.append(buildDualpolQPE("dualpol-QPE-04182017", t))
