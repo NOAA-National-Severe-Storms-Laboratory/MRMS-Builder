@@ -48,9 +48,31 @@ class BuildTar(BuildThird):
   def unzip(self):
     b.run("tar xvf "+self.key+".tar.gz")
 
+class buildGCTPC(BuildTar):
+  """ Build ancient GCTPC projection library """
+  def build(self, t):
+    b.chdir(self.key)
+    b.chdir("source")
+    b.run("make")
+    b.run("cp libgeo.a "+t+"/lib/libgeo.a")
+    b.run("cp *.h "+t+"/include/.")
+
 class buildProj4(BuildTar):
   """ Build proj4 library """
   pass
+
+class buildWgrib2(BuildTar):
+  """ Build Wgrib2 grib2 manipulation tool and library for hydro """
+  def build(self, t):
+    b.chdir(self.key)
+    os.environ["CPPFLAGS"] = "-I"+self.target+"/include/ -Wl,-rpath="+self.target+"/lib"
+    os.environ["LDFLAGS"] = "-L"+self.target+"/lib/ -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
+    b.run("make")
+    b.run("cp wgrib2 "+t+"/bin/wgrib2")
+    b.runOptional("mkdir "+t+"/include/wgrib2/")
+    b.run("cp *.h "+t+"/include/wgrib2/.")
+    os.environ["CPPFLAGS"] = ""
+    os.environ["LDFLAGS"] = ""
 
 class buildJASPER(BuildThird):
   """ Build Jasper library """
@@ -168,24 +190,42 @@ class buildDualpolQPE(BuildTar):
 
 def getBuilders(l, t):
   """ Get the builders from this module """
-  l.append(buildJASPER("jasper-1.900.1", t))
 #  l.append(buildLIBPNG("libpng-1.6.28", t))
-  l.append(buildG2CLIB("g2clib-1.6.0", t))
-  l.append(buildUDUNITS("udunits-2.2.24", t))
-  l.append(buildORPGINFR("orpginfr-3.0.1", t))
+
+  # --------------------------------------------
+  # Tree one: Needed for grib2 manipulation for
+  # various reasons.
+  l.append(buildJASPER("jasper-1.900.1", t))
+  l.append(buildG2CLIB("g2clib-1.6.0", t)) # Require jasper
+
+  # Projection libraries
+  l.append(buildGCTPC("gctpc", t))
   l.append(buildProj4("proj-4.9.3", t))
 
+  # Netcdf libraries
+  l.append(buildNETCDF("netcdf-4.3.3.1", t))
+  l.append(buildNETCDFPLUS("netcdf-cxx-4.2", t))
+
+  # Grib2 tools (Requires: projection, netcdf, jasper and g2clib)
+  l.append(buildWgrib2("wgrib2-2.0.6c", t)) # NOTE: make sure links to current gctpc in LDFLAGS
+
+  # --------------------------------------------
+  # Tree two: Units and other stuff, order here
+  # shouldn't matter
+
+  # Units and orpginfr stuff...
+  l.append(buildUDUNITS("udunits-2.2.24", t))
+  l.append(buildORPGINFR("orpginfr-3.0.1", t))
+
+  # Finally Krause code we use
   l.append(buildDualpol("dualpol-04182017", t))
   l.append(buildDualpolQPE("dualpol-QPE-04182017", t))
 
-  # Newest at the moment
-  #myBuilders.append(buildNETCDF("netcdf-4.4.1.1", t))
-  #myBuilders.append(buildNETCDFPLUS("netcdf-cxx4-4.3.0", t))
-  l.append(buildNETCDF("netcdf-4.3.3.1", t))
-  l.append(buildNETCDFPLUS("netcdf-cxx-4.2", t))
+  # MRMSHydro to MRMSSevere datatype linking library
   l.append(buildHMRGW2("hmrgw2_lib-05102017", t))
 
   # The monster at the end...
+  # This is such a useful library, but it's a big one.
   l.append(buildGDAL("gdal-2.1.3", t))
 
 def build(target):
