@@ -24,7 +24,7 @@ coff = "\033[0m"
 
 line = "------------------------------------------------"
 
-GUIBUILD = "Fresh checkout/build full package with "+red+"GUI"+coff
+GUIBUILD = "Fresh checkout/build full Severe/Hydro package with "+red+"GUI"+coff
 
 def getWhatAdvanced1():
   """ Get what user wants """
@@ -32,7 +32,7 @@ def getWhatAdvanced1():
                "Checkout/Build on top of existing third party",
                "Build third party only.", 
                "Checkout only.",
-               "Rebuild previous folder."]
+               "Rebuild previous folder checked out with MRMS builder."]
   myOptions = ["1", "2" , "3", "4", "5"]
             
   o = b.pickOption("What do you "+red+"want"+coff+" to do?", myPrompts, myOptions, "1", True)
@@ -47,16 +47,6 @@ def getWhat():
   if o == "2":
     o = getWhatAdvanced1()
   return o
-
-#               "Fresh build/checkout on top of existing third party",
-#               "Build third party only", 
-#               "Developer: Checkout only.",
-#               "Developer: Build/Rebuild MRMS only."]
-#  myOptions = ["1", "2" , "3", "4", "5"]
-#            
-#  o = b.pickOption("What do you "+red+"want"+coff+" to do?", myPrompts, myOptions, "1", True)
-#  print "You choose option " +o
-#  return o
 
 def getBuildFolder():
   """ Get the build folder """
@@ -130,7 +120,7 @@ def getPassword():
   print(green+"1.2.3.4 ... That's the password on my luggage.  Well if computers had luggage."+coff)
   return password
 
-def buildhelper(checkout, buildthird, buildmain):
+def buildhelper(checkout, buildthird, buildSevere, buildHydro):
   """ Build stuff in order by flags """
   # Folder wanted
   folder = getBuildFolder()
@@ -145,8 +135,8 @@ def buildhelper(checkout, buildthird, buildmain):
     password = getPassword()
     print(blue+"Checking out code..."+coff)
     print("Getting the "+blue+"main WDSS2 folders"+coff+"...")
-    MRMSSevere.checkout(folder)
-    MRMSHydro.checkout(folder)
+    MRMSSevere.checkout(folder, password)
+    MRMSHydro.checkout(folder, password)
     print(blue+"Ok all checked out."+coff)
 
   # Build the third party
@@ -155,9 +145,12 @@ def buildhelper(checkout, buildthird, buildmain):
     ThirdParty.build(folder)
 
   # Build main library
-  if buildmain:
-    print(blue+"Starting main build..."+coff)
+  if buildSevere:
+    print(blue+"Starting build MRMSSevere..."+coff)
     MRMSSevere.build(folder)
+  if buildHydro:
+    print(blue+"Starting build MRMSHydro..."+coff)
+    MRMSHydro.build(folder)
 
   b.setupSVN(user, True)
 
@@ -175,15 +168,16 @@ def buildMRMS():
 
   what = getWhat()
   if what == "1":
-    buildhelper(True, True, True)
+    buildhelper(True, True, True, True)
+    #buildhelper(False, False, False, True) Just Hydro
   elif what == "2":
-    buildhelper(True, False, True)
+    buildhelper(True, False, True, True)
   elif what == "3":
-    buildhelper(False, True, False)
+    buildhelper(False, True, False, False)
   elif what == "4":
-    buildhelper(True, False, False)
+    buildhelper(True, False, False, False)
   elif what == "5":
-    buildhelper(False, False, True)
+    buildhelper(False, False, True, True)
   else:
     print ("Finished...")
 

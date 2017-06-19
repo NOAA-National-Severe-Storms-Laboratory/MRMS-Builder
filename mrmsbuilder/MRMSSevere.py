@@ -52,8 +52,8 @@ def getBuilders(l, f):
   l.append(buildW2ext("w2ext", f))
   l.append(buildW2tools("w2tools", f))
 
-def checkout(target):
-  b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2)
+def checkout(target, password):
+  b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password)
 
 def build(target):
   """ Build WDSS2 (MRMS_Severe) """

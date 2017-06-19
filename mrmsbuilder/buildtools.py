@@ -120,7 +120,7 @@ def setupSVN(user, printit):
     print("SVN_RSH = \""+SVN_RSH+"\"")
     print("SVNROOT = \""+SVNROOT+"\"")
 
-def checkoutSingle(child, command):
+def checkoutSingle(child, command, password):
   """ Checkout a single SVN repository with password """
   print(green+command+coff) 
   # Try to run a checkout command.  This will expect
@@ -180,13 +180,15 @@ def checkoutSingle(child, command):
       #print("We got EOF!\n")
       return
 
-def checkoutSVN(what,where):
+def checkoutSVN(what,where, password):
   """ Checkout a single SVN repository """
 
   global SVNROOT
   whatfull = unicode(SVNROOT+what, "utf-8")
   wherefull = unicode(where, "utf-8")
   command = (u"svn co "+whatfull+u" "+wherefull)
+  print command
+  sys.exit(1)
   child = pexpect.spawnu(command)
 
   # This is nice for debugging, but it will print your password 
@@ -195,7 +197,7 @@ def checkoutSVN(what,where):
   #child.logfile=sys.stdout
 
   #print("Running checkout...give me a minute to download sources...\n")
-  checkoutSingle(child, command)
+  checkoutSingle(child, command, password)
 
   # Dump rest of unread or not?  This should be the revision info on success
   print child.read()
