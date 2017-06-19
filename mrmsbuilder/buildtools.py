@@ -187,8 +187,6 @@ def checkoutSVN(what,where, password):
   whatfull = unicode(SVNROOT+what, "utf-8")
   wherefull = unicode(where, "utf-8")
   command = (u"svn co "+whatfull+u" "+wherefull)
-  print command
-  sys.exit(1)
   child = pexpect.spawnu(command)
 
   # This is nice for debugging, but it will print your password 
