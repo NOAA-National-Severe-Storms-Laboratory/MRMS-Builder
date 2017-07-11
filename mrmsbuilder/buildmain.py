@@ -12,6 +12,12 @@ from os.path import expanduser
 import buildtools as b
 import filecompleter
 
+# Import the main group builders from all modules
+# You'd add a module here if needed
+from ThirdParty import ThirdPartyBuild
+from MRMSSevere import MRMSSevereBuild
+from MRMSHydro import MRMSHydroBuild
+
 import ThirdParty
 import MRMSSevere
 import MRMSHydro
@@ -24,29 +30,43 @@ coff = "\033[0m"
 
 line = "------------------------------------------------"
 
-GUIBUILD = "Fresh checkout/build full Severe/Hydro package with "+red+"GUI"+coff
+PGUIBUILD = "Fresh checkout/build full Severe/Hydro package with "+red+"GUI"+coff
+PALGBUILD = "Fresh checkout/build full Severe/Hydro package "+red+"without GUI"+coff
 
 def getWhatAdvanced1():
-  """ Get what user wants """
-  myPrompts = [GUIBUILD,
-               "Checkout/Build on top of existing third party",
-               "Build third party only.", 
-               "Checkout only.",
-               "Rebuild previous folder checked out with MRMS builder."]
-  myOptions = ["1", "2" , "3", "4", "5"]
+  """ Get what user wants, using keys and prompts.  They will be numbered """
+  myPrompts = ["guibuild", PGUIBUILD,
+               "algbuild", PALGBUILD,
+               "over3rdbuild", "Checkout/Build on top of existing third party",
+               "build3rd", "Build third party only.", 
+               "checkout", "Checkout only.",
+               "rebuild", "Rebuild previous folder checked out with MRMS builder."]
             
-  o = b.pickOption("What do you "+red+"want"+coff+" to do?", myPrompts, myOptions, "1", True)
-  print "You choose option " +o
+  o = b.pickSmarter("What do you "+red+"want"+coff+" to do?", myPrompts, "guibuild", True, False)
+  print "You choose option: " +o
   return o
   
 def getWhat():
   """ Get what user wants """
-  myPrompts = [GUIBUILD, "Advanced Options"]
-  myOptions = ["1", "2"]
-  o = b.pickOption("What do you "+red+"want"+coff+" to do?", myPrompts, myOptions, "1", True)
-  if o == "2":
+  #myPrompts = [GUIBUILD, ALGBUILD, "Advanced Options"]
+  #myOptions = ["1", "2", "3"]
+  #o = b.pickOption("What do you "+red+"want"+coff+" to do?", myPrompts, myOptions, "1", True)
+  #if o == "3":
+  #  o = getWhatAdvanced1()
+  #return o
+  myPrompts = ["guibuild", PGUIBUILD, 
+               "algbuild", PALGBUILD, 
+               "advanced", "Advanced Options"]
+  o = b.pickSmarter("What do you "+red+"want"+coff+" to do?", myPrompts, "guibuild", True, False)
+  print "You choose option: " +o
+  if o == "advanced":
     o = getWhatAdvanced1()
   return o
+  #myOptions = ["1", "2", "3"]
+  #o = b.pickOption("What do you "+red+"want"+coff+" to do?", myPrompts, myOptions, "1", True)
+  #if o == "3":
+  #  o = getWhatAdvanced1()
+  #return o
 
 def getBuildFolder():
   """ Get the build folder """
@@ -120,37 +140,80 @@ def getPassword():
   print(green+"1.2.3.4 ... That's the password on my luggage.  Well if computers had luggage."+coff)
   return password
 
-def buildhelper(checkout, buildthird, buildSevere, buildHydro):
+def buildhelper(checkout, buildthird, buildSevere, buildHydro, buildGUI):
   """ Build stuff in order by flags """
-  # Folder wanted
-  folder = getBuildFolder()
 
   # Make sure user set always 
   user = getpass.getuser()
 
-  # User/password for SVN and checkout
+  # Builder group packages, add in dependency order
+  # To add a new module, add an 'from' import at top and add
+  # a line here
+  bl = []
+  thirdparty = ThirdPartyBuild()
+  thirdparty.setBuild(buildthird)
+  bl.append(thirdparty)
+
+  mrmssevere = MRMSSevereBuild()
+  mrmssevere.setBuild(buildSevere)
+  mrmssevere.setWantGUI(buildGUI)
+  bl.append(mrmssevere)
+
+  mrmshydro = MRMSHydroBuild()
+  mrmshydro.setBuild(buildHydro)
+  bl.append(mrmshydro)
+
+  # Check requirements for each wanted module
+  #print ("Checking requirements for build...\n")
+  req = True
+  for bg in bl:
+     if bg.getBuild():  # Only check if we're building it?
+       req = req & bg.checkRequirements()
+  if req == False:
+    print "Missing installed libraries or rpms to build, contact IT to install.\n"
+    sys.exit(1)
+
+  # ASK USER:  Folder wanted
+  folder = getBuildFolder()
+
+  # ASK USER: User/password for SVN and checkout
   if checkout:
     user = getUserName(user)
     b.setupSVN(user, False) # Change user now
     password = getPassword()
+
+  # Done with interactive at this point....
+  if checkout:
+   # user = getUserName(user)
+   # b.setupSVN(user, False) # Change user now
+   # password = getPassword()
+
     print(blue+"Checking out code..."+coff)
-    print("Getting the "+blue+"main WDSS2 folders"+coff+"...")
-    MRMSSevere.checkout(folder, password)
-    MRMSHydro.checkout(folder, password)
-    print(blue+"Ok all checked out."+coff)
+    #print("Getting the "+blue+"main WDSS2 folders"+coff+"...")
+    for bg in bl:
+      bg.checkout(folder, password)
+    #mrmssevere.checkout(folder, password)
+    #mrmshydro.checkout(folder, password)
+    print(blue+"Check out success."+coff)
+
+  # Build everything wanted (order matters here)
+  print (blue+"Starting build..."+coff)
+  for bg in bl:
+     if bg.getBuild():
+       bg.build(folder)
 
   # Build the third party
-  if buildthird:
-    print(blue+"Starting third party builder..."+coff)
-    ThirdParty.build(folder)
+  #if buildthird:
+  #  print(blue+"Starting third party builder..."+coff)
+  #  thirdparty.build(folder)
 
   # Build main library
-  if buildSevere:
-    print(blue+"Starting build MRMSSevere..."+coff)
-    MRMSSevere.build(folder)
-  if buildHydro:
-    print(blue+"Starting build MRMSHydro..."+coff)
-    MRMSHydro.build(folder)
+  #if buildSevere:
+  #  print(blue+"Starting build MRMSSevere..."+coff)
+  #  mrmssevere.build(folder)
+  #if buildHydro:
+  #  print(blue+"Starting build MRMSHydro..."+coff)
+  #  mrmshydro.build(folder)
 
   b.setupSVN(user, True)
 
@@ -167,17 +230,20 @@ def buildMRMS():
   print("Hi, "+blue+user+coff+", I'm your hopefully helpful builder.")
 
   what = getWhat()
-  if what == "1":
-    buildhelper(True, True, True, True)
-    #buildhelper(False, False, False, True) Just Hydro
-  elif what == "2":
-    buildhelper(True, False, True, True)
-  elif what == "3":
-    buildhelper(False, True, False, False)
-  elif what == "4":
-    buildhelper(True, False, False, False)
-  elif what == "5":
-    buildhelper(False, False, True, True)
+
+  # FIXME: still kinda messy with the flags.  Better to have set methods I think...
+  if what == "guibuild":
+    buildhelper(True, True, True, True, True)  # Everything
+  if what == "algbuild":
+    buildhelper(True, True, True, True, False) # Everything BUT GUI
+  elif what == "over3rdbuild":
+    buildhelper(True, False, True, True, True) # Everything over a third
+  elif what == "build3rd":  # Checkout, build third party libraries only
+    buildhelper(True, True, False, False, False)
+  elif what == "checkout":  # Only checkout
+    buildhelper(True, False, False, False, False)
+  elif what == "rebuild":
+    buildhelper(False, False, True, True, True) # rebuild, no third
   else:
     print ("Finished...")
 

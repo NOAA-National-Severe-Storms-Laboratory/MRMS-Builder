@@ -16,6 +16,35 @@ coff = "\033[0m"
 
 line = "------------------------------------------------"
 
+def runRead(stuff):
+  """ Run and read output.  Good for decently small comands, but does store in ram """
+  try:
+    #$proc = subprocess.Popen("rpm","-qi "+target, stdout=subprocess.PIPE)
+    proc = subprocess.Popen(stuff,stdout=subprocess.PIPE)
+    lines = []
+    for line in iter(proc.stdout.readline,''):
+      lines.append(line.rstrip())
+    return lines
+  except Exception as e:
+    print "Exception trying to execute command:" + str(e)
+    return []
+
+def checkRPM(prefix):
+  """ Check existance of a RPM by prefix """
+  lines = runRead(["rpm", "-qi", prefix])
+  result = len(lines)
+
+  # Ok, a length > 1 means info probably worked..(the information)
+  if (result > 1):
+    #print "Required RPM found: " +prefix
+    return True
+
+  # Otherwise:
+  # A '1' length is probably the 'package not installed' message...
+  # or zero...some error
+  print "Required RPM NOT found: " +prefix
+  return False
+
 def runOptional(stuff):
   """ Run system command, allow failure  """
   print "Command: "+stuff
@@ -52,6 +81,67 @@ def getInput(defui):
     ui = defui
 
   return ui
+
+def pickSmarter(prompt, promptList, defOption, restrict, flag):
+  """ Choose an option from a list of paired defaults """
+  half = len(promptList)/2
+
+  # Make the default option the number found....
+  o = defOption
+  p = 1;
+  for x in range(half):
+    index = (x*2)
+    if (defOption == promptList[index]):
+      o = str(p)
+      break
+    p = p +1
+
+  while True:
+
+    # Print prompt
+    print prompt
+   
+    # Display the options and option prompts
+    # We generate the numbers
+    p = 1;
+    for x in range(half):
+       #sys.stdout.write(green+optionList[x]+">  "+coff+promptList[x]+"\n")
+       index = (x*2)+1
+       sys.stdout.write(green+str(p)+">  "+coff+promptList[index]+"\n")
+       p = p + 1
+
+    if restrict:
+      print blue+"Choose one of the options or hit enter for default:"+coff
+    else:
+      print blue+"Type in option or enter for default:"+coff
+     
+    # Snag user input
+    if flag == True:
+      comp = filecompleter.Completer()
+      readline.set_completer_delims(' \t\n;')
+      readline.parse_and_bind("tab: complete")
+      readline.set_completer(comp.complete)
+      newo = getInput(o)
+    else:
+      readline.set_completer_delims('')
+      readline.parse_and_bind("")
+      readline.set_completer(None)
+      newo = getInput(o)
+
+    # The option might have to match the given choices
+    # Humm just match number
+    if restrict:
+      try:
+        index = int(newo)
+        if (index > 0) and (index <= half):
+          return promptList[(index-1)*2]
+      except Exception as e:
+        print "Exception: "+str(e)
+        # It's ok, just ask for another choise
+        pass
+    # Otherwise take whatever...
+    else:
+      return newo
 
 def pickOption1(prompt, promptList, optionList, defOption, restrict, flag):
   """ Choose an option from a list of default """
