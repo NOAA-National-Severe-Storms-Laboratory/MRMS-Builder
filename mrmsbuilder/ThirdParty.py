@@ -226,7 +226,7 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildGDAL("gdal-2.1.3"))
     self.myBuilders = l
 
-  def build(self, target):
+  def build(self, target, configFlags, makeFlags):
     """ Build third party used by all packages """
 
     print("Building third party libraries: " +target) 
@@ -254,7 +254,7 @@ class ThirdPartyBuild(BuilderGroup):
 
     # Build all builders...
     for build in self.myBuilders:
-      build.build(target, "", "")
+      build.build(target, configFlags, makeFlags)
       b.chdir(tbase)
 
     # came back so mark a good build...

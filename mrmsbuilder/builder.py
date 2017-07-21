@@ -70,5 +70,5 @@ class BuilderGroup:
     return req
   def checkout(self, target, password):
     pass
-  def build(self, target):
+  def build(self, target, configFlags, makeFlags):
     pass

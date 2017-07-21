@@ -29,7 +29,7 @@ class MRMSHydroBuild(BuilderGroup):
   def checkout(self, target, password):
     b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password)
 
-  def build(self, target):
+  def build(self, target, configFlags, makeFlags):
     """ Build HYDRO (MRMS_Hydro) """
     print("\nBuilding HYDRO (MRMS_Hydro) libraries...")
 
@@ -40,7 +40,7 @@ class MRMSHydroBuild(BuilderGroup):
 
     # Build all builders...
     for build in self.myBuilders:
-      build.build(target, "", "")
+      build.build(target, configFlags, makeFlags)
 
     # Put a check ldd script into the bin directory
     # Maybe this shouldn't be in this code here

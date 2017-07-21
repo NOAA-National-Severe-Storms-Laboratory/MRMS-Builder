@@ -73,7 +73,7 @@ class MRMSSevereBuild(BuilderGroup):
   def checkout(self, target, password):
     b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password)
 
-  def build(self, target):
+  def build(self, target, configFlags, makeFlags):
     """ Build WDSS2 (MRMS_Severe) """
     print("\nBuilding WDSS2 (MRMS_Severe) libraries...")
 
@@ -84,7 +84,7 @@ class MRMSSevereBuild(BuilderGroup):
 
     # Build all builders...
     for build in self.myBuilders:
-      build.build(target, "", "")
+      build.build(target, configFlags, makeFlags)
 
     # Put a check ldd script into the bin directory
     # Maybe this shouldn't be in this code here

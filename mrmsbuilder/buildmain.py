@@ -11,6 +11,7 @@ from subprocess import Popen, PIPE
 from os.path import expanduser
 import buildtools as b
 import filecompleter
+import multiprocessing
 
 # Import the main group builders from all modules
 # You'd add a module here if needed
@@ -197,23 +198,15 @@ def buildhelper(checkout, buildthird, buildSevere, buildHydro, buildGUI):
     print(blue+"Check out success."+coff)
 
   # Build everything wanted (order matters here)
-  print (blue+"Starting build..."+coff)
+  # We're gonna have to make a configuration file for advanced settings...
+  cpus = multiprocessing.cpu_count() 
+  print (blue+"Starting build..."+str(cpus)+" processors detected"+coff)
+  configFlags = "" # extra config flags
+  makeFlags = "--jobs="+str(cpus)   # extra make flags
+  #makeFlags = "--jobs"   # unlimited fast and nuts...woo hoo
   for bg in bl:
      if bg.getBuild():
-       bg.build(folder)
-
-  # Build the third party
-  #if buildthird:
-  #  print(blue+"Starting third party builder..."+coff)
-  #  thirdparty.build(folder)
-
-  # Build main library
-  #if buildSevere:
-  #  print(blue+"Starting build MRMSSevere..."+coff)
-  #  mrmssevere.build(folder)
-  #if buildHydro:
-  #  print(blue+"Starting build MRMSHydro..."+coff)
-  #  mrmshydro.build(folder)
+       bg.build(folder, configFlags, makeFlags)
 
   b.setupSVN(user, True)
 
@@ -248,4 +241,6 @@ def buildMRMS():
     print ("Finished...")
 
 if __name__ == "__main__":
-  buildMRMS()
+  cpus = multiprocessing.cpu_count() 
+  print (blue+"Starting build..."+str(cpus)+" processors detected"+coff)
+  #buildMRMS()
