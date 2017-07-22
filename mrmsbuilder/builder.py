@@ -30,6 +30,22 @@ class Builder:
   def checkRequirements(self):
     """ return false if requirements not met """
     return True
+  def cppFlags(self, target):
+    """ Stock cppflags that include our build include (always use our source first) """
+   # return "CPPFLAGS=-I"+target+"/include"
+    return "-I"+target+"/include/ -Wl,-rpath="+target+"/lib"
+  def ldFlags(self, target):
+    """ Stock ldflags that include our build lib (always use our libs first) """
+    return "-L"+target+"/lib/"
+  def autogen(self, prefix, target):
+    """ Srock autogen/configure that forces our built libraries and headers over system """
+    cppflags = self.cppFlags(target)
+    ldflags = self.ldFlags(target)
+    if cppflags != "":
+      cppflags = "CPPFLAGS='"+cppflags+"'"
+    if ldflags != "":
+      ldflags = "LDFLAGS='"+ldflags+"'"
+    return prefix+" --prefix="+target+" "+cppflags+" "+ldflags
   def makeInstall(self, makeflags):
     """ Do the stock make and make install in a build """
     b.run("make "+makeflags)

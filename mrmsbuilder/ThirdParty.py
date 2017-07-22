@@ -38,7 +38,9 @@ class BuildThird(Builder):
     b.runOptional("rm -rf "+self.key)
   def build(self, t, c, m):
     b.chdir(self.key)
-    b.run("./configure --prefix="+t+" --enable-shared")
+    r = self.autogen("./configure", t)
+    r = r + " --enable-shared"
+    b.run(r)
     self.makeInstall(m)
 
 class BuildTar(BuildThird):
@@ -65,8 +67,8 @@ class buildWgrib2(BuildTar):
   """ Build Wgrib2 grib2 manipulation tool and library for hydro """
   def build(self, t, c, m):
     b.chdir(self.key)
-    os.environ["CPPFLAGS"] = "-I"+t+"/include/ -Wl,-rpath="+t+"/lib"
-    os.environ["LDFLAGS"] = "-L"+t+"/lib/ -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
+    os.environ["CPPFLAGS"] = self.cppFlags(t)
+    os.environ["LDFLAGS"] = self.ldFlags(t)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
     b.run("make")
     b.run("cp wgrib2 "+t+"/bin/wgrib2")
     b.runOptional("mkdir "+t+"/include/wgrib2/")
@@ -89,7 +91,9 @@ class buildHMRGW2(BuildTar):
   """ Build HMRGW2 library to link hydro and w2 """
   def build(self, t, c, m):
     b.chdir(self.key)
-    b.run("./autogen.sh --prefix="+t+" --enable-shared")
+    r = self.autogen("./autogen.sh", t)
+    r = r + " --enable-shared"
+    b.run(r)
     self.makeInstall(m)
 
 class buildG2CLIB(BuildThird):
@@ -127,17 +131,19 @@ class buildNETCDFPLUS(BuildTar):
   def build(self, t, c, m):
     b.chdir(self.key)
     # f***** brain dead netcdfc++.  We really need to kill this library from w2 like in RAMP
-    cppflags = "CPPFLAGS=-I"+t+"/include/"
-    ldflags = "LDFLAGS=-L"+t+"/lib/"
     #os.environ["CPPFLAGS"] = "-I"+t+"/include/"
-    b.run("./configure --prefix="+t+" "+cppflags+" " +ldflags +" --enable-shared --enable-cxx-4")
+    r = self.autogen("./configure", t)
+    r = r + " --enable-shared --enable-cxx-4"
+    b.run(r)
     self.makeInstall(m)
 
 class buildORPGINFR(BuildTar):
   """ Build orpginfr library """
   def build(self, t, c, m):
     b.chdir(self.key)
-    b.run("./autogen.sh --prefix="+t+" --enable-shared")
+    r = self.autogen("./autogen.sh", t)
+    r = r +" --enable-shared"
+    b.run(r)
     b.run("chmod a+x ./LinkLib008")
     self.makeInstall(m)
 
@@ -145,20 +151,21 @@ class buildGDAL(BuildTar):
   """ Build gdal library """
   def build(self, t, c, m):
     b.chdir(self.key)
-    #b.run("./autogen.sh --prefix="+t+" --enable-shared")
-    c = "./configure --prefix="+t+" --without-mysql --without-python --with-jpeg=no --with-gif=no --without-ogr --with-geos=no --with-pg=no --with-pic --with-hdf5=no --with-ogr=no"
-    c = c + " --with-libtiff=internal"    # Use internal?  RPM might be stock
-    c = c + " --with-png="+t              # Use built one
-    c = c + " --with-jasper="+t           # Use built one
-    c = c + " --without-grib"             # conflict with g2clib
-    b.run(c)
+    r = self.autogen("./configure", t)
+    r = r + " --without-mysql --without-python --with-jpeg=no --with-gif=no --without-ogr --with-geos=no --with-pg=no --with-pic --with-hdf5=no --with-ogr=no"
+    r = r + " --with-libtiff=internal"    # Use internal?  RPM might be stock
+    r = r + " --with-png="+t              # Use built one
+    r = r + " --with-jasper="+t           # Use built one
+    r = r + " --without-grib"             # conflict with g2clib
+    b.run(r)
     self.makeInstall(m)
 
 class buildDualpol(BuildTar):
   """ Build base dualpol library """
   def build(self, t, c, m):
     b.chdir(self.key)
-    b.run("./autogen.sh --prefix="+t+" ")
+    r = self.autogen("./autogen.sh", t)
+    b.run(r)
     self.makeInstall(m)
 
 class buildDualpolRRDD(BuildTar):
@@ -166,11 +173,8 @@ class buildDualpolRRDD(BuildTar):
   def build(self, t, c, m):
     b.chdir(self.key)
     pathDualpol(t)
-    cppflags = "CPPFLAGS=-I"+t+"/include/"
-    ldflags = "LDFLAGS=-L"+t+"/lib/"
-    #os.environ["CPPFLAGS"] = "-I"+t+"/include/"
-    b.run("./autogen.sh --prefix="+t+" "+cppflags+" " +ldflags +" ")
-    #b.run("./autogen.sh --prefix="+t+" ")
+    r = self.autogen("./autogen.sh", t)
+    b.run(r)
     self.makeInstall(m)
 
 class buildDualpolQPE(BuildTar):
@@ -178,8 +182,8 @@ class buildDualpolQPE(BuildTar):
   def build(self, t, c, m):
     b.chdir(self.key)
     pathDualpol(t)
-    ldflags = "LDFLAGS=-L"+t+"/lib/"
-    b.run("./autogen.sh --prefix="+t+" "+ldflags)
+    r = self.autogen("./autogen.sh", t)
+    b.run(r)
     self.makeInstall(m)
 
 class ThirdPartyBuild(BuilderGroup):
