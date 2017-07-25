@@ -121,6 +121,11 @@ class buildG2CLIB(BuildThird):
 class buildUDUNITS(BuildTar):
   """ Build udunits library """
   pass
+  def checkRequirements(self):
+    # UDUNITS2 wants the expat-devel XML library
+    req = True
+    req = req & b.checkRPM("expat-devel")
+    return req
 
 class buildHDF5(BuildTar):
   """ Build udunits library """
