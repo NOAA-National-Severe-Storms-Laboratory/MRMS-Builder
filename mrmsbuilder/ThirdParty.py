@@ -122,6 +122,10 @@ class buildUDUNITS(BuildTar):
   """ Build udunits library """
   pass
 
+class buildHDF5(BuildTar):
+  """ Build udunits library """
+  pass
+
 class buildNETCDF(BuildTar):
   """ Build netcdf library """
   pass
@@ -204,6 +208,7 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildProj4("proj-4.9.3"))
 
     # Netcdf libraries
+    l.append(buildHDF5("hdf5-1.8.12"))
     l.append(buildNETCDF("netcdf-4.3.3.1"))
     l.append(buildNETCDFPLUS("netcdf-cxx-4.2"))
 
