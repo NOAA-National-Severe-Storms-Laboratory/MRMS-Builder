@@ -12,6 +12,7 @@ from os.path import expanduser
 import buildtools as b
 import filecompleter
 import multiprocessing
+import config as config
 
 # Import the main group builders from all modules
 # You'd add a module here if needed
@@ -127,25 +128,38 @@ def getBuildFolder():
     if good:
       return wanted
 
-def getUserName(user):
-  print(line)
+def getUserName():
   """ Get user name for build """
-  o = b.pickOption("What "+red+"username"+coff+" for SVN?", [], [], user, False)
-  print "Username: " +o
+  global theConf
+  o = theConf.getString("USERNAME", "")
+  if o == "":
+    print(line)
+    user = getpass.getuser()
+    o = b.pickOption("What "+red+"username"+coff+" for SVN?", [], [], user, False)
+    print "Username: " +o
   return o
   
-def getPassword():
-  print(line)
-  print("To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)")
-  password = getpass.getpass(green+"Password:"+coff)
-  print(green+"1.2.3.4 ... That's the password on my luggage.  Well if computers had luggage."+coff)
-  return password
+def getPassword(user):
+  """ Get password for build """
+  global theConf
+  o = theConf.getString("PASSWORD", "")
+  if o == "":
+    print(line)
+    print("To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)")
+    o = getpass.getpass(green+user+" Password:"+coff)
+    print(green+"1.2.3.4 ... That's the password on my luggage.  Well if computers had luggage."+coff)
+  return o
+
+def getJobs():
+  """ Get job flag for all makes """
+  global theConf
+  o = theConf.getString("JOBS", "")
+  if ((o == "CPU") or (o == "")):
+    o =str(multiprocessing.cpu_count())
+  return o
 
 def buildhelper(checkout, buildthird, buildSevere, buildHydro, buildGUI):
   """ Build stuff in order by flags """
-
-  # Make sure user set always 
-  user = getpass.getuser()
 
   # Builder group packages, add in dependency order
   # To add a new module, add an 'from' import at top and add
@@ -179,15 +193,12 @@ def buildhelper(checkout, buildthird, buildSevere, buildHydro, buildGUI):
 
   # ASK USER: User/password for SVN and checkout
   if checkout:
-    user = getUserName(user)
+    user = getUserName()
     b.setupSVN(user, False) # Change user now
-    password = getPassword()
+    password = getPassword(user)
 
   # Done with interactive at this point....
   if checkout:
-   # user = getUserName(user)
-   # b.setupSVN(user, False) # Change user now
-   # password = getPassword()
 
     print(blue+"Checking out code..."+coff)
     #print("Getting the "+blue+"main WDSS2 folders"+coff+"...")
@@ -198,12 +209,9 @@ def buildhelper(checkout, buildthird, buildSevere, buildHydro, buildGUI):
     print(blue+"Check out success."+coff)
 
   # Build everything wanted (order matters here)
-  # We're gonna have to make a configuration file for advanced settings...
-  cpus = multiprocessing.cpu_count() 
-  print (blue+"Starting build..."+str(cpus)+" processors detected"+coff)
   configFlags = "" # extra config flags
-  makeFlags = "--jobs="+str(cpus)   # extra make flags
-  #makeFlags = "--jobs"   # unlimited fast and nuts...woo hoo
+  cpus = getJobs() 
+  makeFlags = "--jobs="+cpus   # extra make flags
   for bg in bl:
      if bg.getBuild():
        bg.build(folder, configFlags, makeFlags)
@@ -212,13 +220,23 @@ def buildhelper(checkout, buildthird, buildSevere, buildHydro, buildGUI):
 
 def buildMRMS():
   """ Build MRMS by checking out SVN with questions """
+  global theConf
+
+  # Try to use default cfg or one passed by user
+  configFile = "default.cfg"
+  if len(sys.argv) > 1:
+    configFile = sys.argv[1]
+  theConf = config.Configuration()
+  confResult = theConf.readConfig(configFile)
+ # aName = theConf.getString("USERNAME", "")
+ # print ("Name from config is "+aName)
 
   user = getpass.getuser()
   b.setupSVN(user, False)
 
   print(line)
-  print("Welcome to the "+green+"MRMS project builder"+coff+".")
-  print("Version 1.0")
+  print("Welcome to the "+green+"MRMS project builder V1.0"+coff)
+  print("Using config file: "+configFile+" "+red+confResult+coff)
   print(line)
   print("Hi, "+blue+user+coff+", I'm your hopefully helpful builder.")
 
@@ -241,6 +259,4 @@ def buildMRMS():
     print ("Finished...")
 
 if __name__ == "__main__":
-  cpus = multiprocessing.cpu_count() 
-  print (blue+"Starting build..."+str(cpus)+" processors detected"+coff)
-  #buildMRMS()
+  print "Run the ./build.py script to execute\n"

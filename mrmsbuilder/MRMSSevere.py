@@ -8,7 +8,7 @@ import buildtools as b
 from builder import Builder
 from builder import BuilderGroup
 
-WDSS2 = "MRMSSevere"
+WDSS2 = "WDSS2"
 
 class buildW2(Builder):
   """ Build W2 library """

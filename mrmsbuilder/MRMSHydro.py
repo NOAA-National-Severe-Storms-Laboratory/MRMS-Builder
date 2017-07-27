@@ -8,7 +8,7 @@ import buildtools as b
 from builder import Builder
 from builder import BuilderGroup
 
-HYDRO = "MRMSHydro"
+HYDRO = "HMET"
 
 class buildHydro(Builder):
   """ Build Hydro library """
