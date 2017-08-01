@@ -74,27 +74,35 @@ def getBuildFolder():
   """ Get the build folder """
   #global date
 
-  # WDSS2 folder with a timestamp
+  # Get Timestamp
   today = datetime.date.today()
   date = today.strftime("%Y%m%d")
-  folder = "WDSS2_"+date
 
   # Relative to script location (option 1)
   relativePath = os.path.dirname(os.path.realpath(__file__))
   oldpwd = os.getcwd()
   os.chdir(relativePath)
   os.chdir("..")
+  os.chdir("..")
   relativePath = os.getcwd()
   os.chdir(oldpwd)
-  relativePath = relativePath+"/"+folder
-  static1Path = relativePath+"/MRMS"
 
-  # Home path...(option 2)
-  homePath = expanduser("~")+"/"+folder
+  # Paths
+  relativePath = relativePath+"/MRMS"
+  relativePathDate = relativePath+"_"+date
+  homePath = expanduser("~")+"/"+"MRMS"
+  homePathDate = homePath+"_"+date
 
-  myPrompts = ["Use Relative: " +green+relativePath+coff,"Use Home: " + green+homePath+coff]
+  #myPrompts = ["Use Relative: " +green+relativePath+coff,"Use Home: " + green+homePath+coff]
   #             "Use Static: " + green+static1Path+coff]
-  myOptions = ["1", "2"]
+  #myOptions = ["1", "2"]
+  myPrompts = [
+               "Use Home Dated: " + green+homePathDate+coff,
+               "Use Home: " + green+homePath+coff,
+               "Use Relative Dated: " + green+relativePathDate+coff,
+               "Use Relative: " + green+relativePath+coff,
+              ]
+  myOptions = ["1", "2", "3", "4"]
             
   while True:
     good = True
@@ -105,11 +113,16 @@ def getBuildFolder():
     # Get the path wanted
     wanted = o 
 
+    if (wanted == ""): # Use default of 1
+      wanted = "1"
+
     if (wanted == "1"):
-      wanted = relativePath
+      wanted = homePathDate
     elif (wanted == "2"):
       wanted = homePath
-    elif (wanted == ""):
+    elif (wanted == "3"):
+      wanted = relativePathDate
+    elif (wanted == "4"):
       wanted = relativePath
 
     # Try to create directory...

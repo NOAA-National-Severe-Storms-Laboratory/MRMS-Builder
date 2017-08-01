@@ -3,6 +3,10 @@
 # Robert Toomey March 2017
 # Build tools
 
+# Here be the settings.  Change if needed:
+SVNMACHINE = "vmrms-ark.protect.nssl"
+SVNPATH ="/localdata/svn"
+
 import os,sys
 import subprocess
 import pexpect
@@ -195,13 +199,15 @@ def pickFileOption(prompt, promptList, optionList, defOption, restrict):
 
 def setupSVN(user, printit):
   """ Setup the SVN settings """
+  global SVNMACHINE
+  global SVNPATH
 
   # I'm just gonna set the things
   global SVNROOT 
   global SVN_RSH
 
   SVN_RSH = "svn+ssh"
-  SVNROOT = "svn+ssh://"+user+"@tensor.protect.nssl/var/svn"
+  SVNROOT = "svn+ssh://"+user+"@"+SVNMACHINE+SVNPATH
   os.environ["SVNROOT"] = SVNROOT
   os.environ["SVN_RSH"] = SVN_RSH
 
@@ -223,10 +229,16 @@ def checkoutSingle(child, command, password):
   # Handle all output from the svn/password checkout
   child.logfile=sys.stdout
   while True:
-    i = child.expect([u'Password: ',     # 0
-                      u'Account cannot', # 1
-                      u'(yes/no)',       # 2
-                      u'\r\n',           # 3
+    # Warning on these strings.  They can't show up exactly in the svn output..possible future bug
+    # Need more advanced coding to 100% make sure the checkout doesn't 'hit' any of these lines.  Works
+    # at the moment
+    i = child.expect([u'Password: ',          # 0 
+                      u'Account cannot',      # 1
+                      u'(yes/no)',            # 2
+                      u'Unable to connect',   # 3 svn failure
+                      u'No repository found', # 4 svn failure
+                      u' expire',             # 5 Hope this snags expired passwords
+                      u'\r\n',                # 6
                       pexpect.EOF ], 
                       timeout=600)
     if i==0:
@@ -253,9 +265,17 @@ def checkoutSingle(child, command, password):
     elif i == 2: 
       child.sendline("yes") # We sure dooz wantz to logz inz
 
+    elif ((i == 3) or (i == 4)): 
+      print(">>Svn failure...aborting..")
+      sys.exit()
+
+    elif (i == 5): 
+      print(">>Password possibly expired...log in and change it and retry...aborting..")
+      sys.exit()
+
     # Got a newline back...we'll print out every so often so user doesn't think
     # we're hung up.  Don't really need 'all' the svn output to spam us
-    elif i == 3:
+    elif i == 6:
       if spamcount == 0:
         print(child.before) # Print every maxspam checkout line
         #sys.stdout.write('.')
