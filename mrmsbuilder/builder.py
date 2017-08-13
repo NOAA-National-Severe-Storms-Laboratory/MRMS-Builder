@@ -30,22 +30,37 @@ class Builder:
   def checkRequirements(self):
     """ return false if requirements not met """
     return True
-  def cppFlags(self, target):
-    """ Stock cppflags that include our build include (always use our source first) """
-   # return "CPPFLAGS=-I"+target+"/include"
+  def localInclude(self, target):
+    """ Stock cpp option that include our build include (always use our source first) """
     return "-I"+target+"/include/ -Wl,-rpath="+target+"/lib"
-  def ldFlags(self, target):
+  def localLink(self, target):
     """ Stock ldflags that include our build lib (always use our libs first) """
     return "-L"+target+"/lib/"
+  def cppFlags(self, target):
+    """ Get cppflags """
+    cppflags = self.localInclude(target)
+    if cppflags != "":
+      cppflags = " CPPFLAGS='"+cppflags+"'"
+    return cppflags
+  def ldFlags(self, target):
+    """ Get ldflags """
+    ldflags = self.localLink(target)
+    if ldflags != "":
+      ldflags = " LDFLAGS='"+ldflags+"'"
+    return ldflags
+  def shareFlags(self):
+    """ Flags for share/static build """
+    return " --enable-shared"
+  def prefixFlags(self, target):
+    """ Flags for prefix """
+    return " --prefix="+target
   def autogen(self, prefix, target):
-    """ Srock autogen/configure that forces our built libraries and headers over system """
+    """ Append all flags to prefix given """
     cppflags = self.cppFlags(target)
     ldflags = self.ldFlags(target)
-    if cppflags != "":
-      cppflags = "CPPFLAGS='"+cppflags+"'"
-    if ldflags != "":
-      ldflags = "LDFLAGS='"+ldflags+"'"
-    return prefix+" --prefix="+target+" "+cppflags+" "+ldflags
+    prefixflags = self.prefixFlags(target)
+    shareFlags = self.shareFlags()
+    return prefix+prefixflags+cppflags+ldflags+shareFlags
   def makeInstall(self, makeflags):
     """ Do the stock make and make install in a build """
     b.run("make "+makeflags)
@@ -68,7 +83,7 @@ class BuilderGroup:
     for build in self.myBuilders:
        aKey = build.getKey()
        if (aKey == key):
-         #print "Removing builder " +key + " from builder list"
+         #print("Removing builder " +key + " from builder list")
          pass
        else:
          newlist.append(build)
@@ -77,7 +92,7 @@ class BuilderGroup:
   def listBuilders(self):
     """ List all builder keys """
     for build in self.myBuilders:
-      print "Builder: "+build.getKey()
+      print("Builder: "+build.getKey())
   def checkRequirements(self):
     """ Check requirements for this builder. """
     req = True

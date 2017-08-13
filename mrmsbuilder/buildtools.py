@@ -29,8 +29,9 @@ def runRead(stuff):
     for line in iter(proc.stdout.readline,''):
       lines.append(line.rstrip())
     return lines
-  except Exception as e:
-    print "Exception trying to execute command:" + str(e)
+  #except Exception as e: #Gotta support older python
+  except Exception, e:
+    print ("Exception trying to execute command:" + str(e))
     return []
 
 def checkRPM(prefix):
@@ -40,18 +41,18 @@ def checkRPM(prefix):
 
   # Ok, a length > 1 means info probably worked..(the information)
   if (result > 1):
-    #print "Required RPM found: " +prefix
+    #print("Required RPM found: " +prefix)
     return True
 
   # Otherwise:
   # A '1' length is probably the 'package not installed' message...
   # or zero...some error
-  print "Required RPM NOT found: " +prefix
+  print("Required RPM NOT found: " +prefix)
   return False
 
 def runOptional(stuff):
   """ Run system command, allow failure  """
-  print "Command: "+stuff
+  print("Command: "+stuff)
   try:
     subprocess.check_call(stuff, shell=True)
     return False
@@ -62,8 +63,8 @@ def run(stuff):
   """ Run system command or fail """
   failed = runOptional(stuff)
   if failed:
-    print "Failed to execute command, something is wrong. 8("
-    print "Command: "+stuff
+    print("Failed to execute command, something is wrong. 8(")
+    print("Command: "+stuff)
     sys.exit(1)
 
 def chdir(stuff):
@@ -74,7 +75,7 @@ def getInput(defui):
   """ Get input with default option """
 
   # Python 3 requires input not raw_input
- # print blue+"Choose an option or hit enter for default:"+coff
+ # print(blue+"Choose an option or hit enter for default:"+coff)
   if sys.version_info <(3,0):
     ui = raw_input(green+defui+coff+" >")
   else:
@@ -103,7 +104,7 @@ def pickSmarter(prompt, promptList, defOption, restrict, flag):
   while True:
 
     # Print prompt
-    print prompt
+    print(prompt)
    
     # Display the options and option prompts
     # We generate the numbers
@@ -115,9 +116,9 @@ def pickSmarter(prompt, promptList, defOption, restrict, flag):
        p = p + 1
 
     if restrict:
-      print blue+"Choose one of the options or hit enter for default:"+coff
+      print(blue+"Choose one of the options or hit enter for default:"+coff)
     else:
-      print blue+"Type in option or enter for default:"+coff
+      print(blue+"Type in option or enter for default:"+coff)
      
     # Snag user input
     if flag == True:
@@ -139,8 +140,9 @@ def pickSmarter(prompt, promptList, defOption, restrict, flag):
         index = int(newo)
         if (index > 0) and (index <= half):
           return promptList[(index-1)*2]
-      except Exception as e:
-        print "Exception: "+str(e)
+      #except Exception as e: #Gotta support older python
+      except Exception, e:
+        print("Exception: "+str(e))
         # It's ok, just ask for another choise
         pass
     # Otherwise take whatever...
@@ -161,9 +163,9 @@ def pickOption1(prompt, promptList, optionList, defOption, restrict, flag):
        sys.stdout.write(green+optionList[x]+">  "+coff+promptList[x]+"\n")
 
     if restrict:
-      print blue+"Choose one of the options or hit enter for default:"+coff
+      print(blue+"Choose one of the options or hit enter for default:"+coff)
     else:
-      print blue+"Type in option or enter for default:"+coff
+      print(blue+"Type in option or enter for default:"+coff)
      
     # Snag user input
     if flag == True:
@@ -308,5 +310,5 @@ def checkoutSVN(what,where, password):
   checkoutSingle(child, command, password)
 
   # Dump rest of unread or not?  This should be the revision info on success
-  print child.read()
+  print(child.read())
 

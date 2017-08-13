@@ -45,7 +45,7 @@ def getWhatAdvanced1():
                "rebuild", "Rebuild previous folder checked out with MRMS builder."]
             
   o = b.pickSmarter("What do you "+red+"want"+coff+" to do?", myPrompts, "guibuild", True, False)
-  print "You choose option: " +o
+  print("You choose option: " +o)
   return o
   
 def getWhat():
@@ -60,7 +60,7 @@ def getWhat():
                "algbuild", PALGBUILD, 
                "advanced", "Advanced Options"]
   o = b.pickSmarter("What do you "+red+"want"+coff+" to do?", myPrompts, "guibuild", True, False)
-  print "You choose option: " +o
+  print("You choose option: " +o)
   if o == "advanced":
     o = getWhatAdvanced1()
   return o
@@ -108,7 +108,7 @@ def getBuildFolder():
     good = True
 
     o = b.pickOption1(red+"Where"+coff+" would you like the build placed? (You can type a path as well)", myPrompts, myOptions, "1", False, True)
-    print "You choose: " +o
+    print("You choose: " +o)
 
     # Get the path wanted
     wanted = o 
@@ -130,12 +130,12 @@ def getBuildFolder():
       try:
         os.makedirs(wanted)
       except:
-        print ("I couldn't create directory "+wanted)
+        print("I couldn't create directory "+wanted)
         good = False
 
     # Try to access directory...
     if not os.access(wanted, os.W_OK):
-      print ("...but I can't _access_ "+wanted+". Permission settings?")
+      print("...but I can't _access_ "+wanted+". Permission settings?")
       good = False
  
     if good:
@@ -149,7 +149,7 @@ def getUserName():
     print(line)
     user = getpass.getuser()
     o = b.pickOption("What "+red+"username"+coff+" for SVN?", [], [], user, False)
-    print "Username: " +o
+    print("Username: " +o)
   return o
   
 def getPassword(user):

@@ -949,10 +949,13 @@ dnl ])
 
 AC_DEFUN([CHECK_COMPRESSION],[
 
-    #z_search_path="/usr/lib64 /usr /nssl/nsslsun/wdssii /usr/local /server/local /usr/lib/i386-linux-gnu"
-    #bz_search_path="/usr/lib64 /usr /nssl/nsslsun/wdssii /usr/local /server/local /usr/local/bzip2-1.0.1"
-    z_inc_search_path="/usr/include"
-    z_lib_search_path="/usr/lib64"
+    # Use third party built path
+    #z_inc_search_path="/usr/include"
+    #z_lib_search_path="/usr/lib64"
+    z_inc_search_path="$prefix/include"
+    z_lib_search_path="$prefix/lib"
+
+    # User system bzip...
     bz_inc_search_path="/usr/include"
     bz_lib_search_path="/usr/lib64"
 

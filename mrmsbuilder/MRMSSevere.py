@@ -96,4 +96,4 @@ class MRMSSevereBuild(BuilderGroup):
 
 # Run main
 if __name__ == "__main__":
-  print "Run the main build script...\n"
+  print("Run the main build script...")

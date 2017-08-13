@@ -18,7 +18,7 @@ def pathDualpol(target):
   global dualSet
 
   if dualSet == 0:
-    print "******Setting path dualpol"
+    print("******Setting path dualpol")
     os.environ["ORPGDIR"] = target
     os.environ["DUALPOLDIR"] = target
     os.environ["QPE_LIB_ONLY"] = "1"
@@ -30,18 +30,17 @@ def pathDualpol(target):
       os.environ["PKG_CONFIG_PATH"] = cfg+":"+c
     dualSet = 1
   else:
-    print "Not setting path dualpol"
+    print("Not setting path dualpol")
 
 class BuildThird(Builder):
   """ build a third party from compressed source and stock configure """
   def clean(self):
     b.runOptional("rm -rf "+self.key)
-  def build(self, t, c, m):
-    b.chdir(self.key)
-    r = self.autogen("./configure", t)
-    r = r + " --enable-shared"
-    b.run(r)
-    self.makeInstall(m)
+  #def build(self, t, c, m): This is too confusing at moment
+  #  b.chdir(self.key)
+  #  r = self.autogen("./configure", t)
+  #  b.run(r)
+  #  self.makeInstall(m)
 
 class BuildTar(BuildThird):
   """ build a third party from a stock tar.gz """
@@ -49,6 +48,13 @@ class BuildTar(BuildThird):
     b.run("cp "+self.key+".tar.gz "+t)
   def unzip(self):
     b.run("tar xvf "+self.key+".tar.gz")
+
+class BuildZip(BuildThird):
+  """ build a third party from a stock zip """
+  def copy(self, t):
+    b.run("cp "+self.key+".zip "+t)
+  def unzip(self):
+    b.run("unzip "+self.key+".zip")
 
 class buildGCTPC(BuildTar):
   """ Build ancient GCTPC projection library """
@@ -61,14 +67,43 @@ class buildGCTPC(BuildTar):
 
 class buildProj4(BuildTar):
   """ Build proj4 library """
-  pass
+  def build(self, t, c, m):
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    b.run(r)
+    self.makeInstall(m)
+
+class buildZLIB(BuildTar):
+  """ Build ZLIB library """
+  def cppFlags(self, target):
+    """ CPPFLAGS doesn't work with configure with zlib """
+    return ""
+  def ldFlags(self, target):
+    """ LDFLAGS doesn't work with configure zlib """
+    return ""
+  def build(self, t, c, m):
+    """ Build ZLIB """
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    b.run(r)
+    self.makeInstall(m)
+
+class buildCURL(BuildTar):
+  """ Build CURL library """
+  def build(self, t, c, m):
+    b.chdir(self.key)
+    #r = self.autogen("./configure", t)
+    #r = self.autogen("./configure", t)
+    r = "./configure --prefix="+t+" --with-zlib="+t
+    b.run(r)
+    self.makeInstall(m)
 
 class buildWgrib2(BuildTar):
   """ Build Wgrib2 grib2 manipulation tool and library for hydro """
   def build(self, t, c, m):
     b.chdir(self.key)
-    os.environ["CPPFLAGS"] = self.cppFlags(t)
-    os.environ["LDFLAGS"] = self.ldFlags(t)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
+    os.environ["CPPFLAGS"] = self.localInclude(t)
+    os.environ["LDFLAGS"] = self.localLink(t)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
     b.run("make")
     b.run("cp wgrib2 "+t+"/bin/wgrib2")
     b.runOptional("mkdir "+t+"/include/wgrib2/")
@@ -76,23 +111,28 @@ class buildWgrib2(BuildTar):
     os.environ["CPPFLAGS"] = ""
     os.environ["LDFLAGS"] = ""
 
-class buildJASPER(BuildThird):
+class buildJASPER(BuildZip):
   """ Build Jasper library """
-  def copy(self, t):
-    b.run("cp "+self.key+".zip "+t)
-  def unzip(self):
-    b.run("unzip "+self.key+".zip")
+  def build(self, t, c, m):
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    r = r + " --bindir="+t+"/bin/JASPER"
+    b.run(r)
+    self.makeInstall(m)
 
 class buildLIBPNG(BuildTar):
   """ Build libpng library """
-  pass
+  def build(self, t, c, m):
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    b.run(r)
+    self.makeInstall(m)
 
 class buildHMRGW2(BuildTar):
   """ Build HMRGW2 library to link hydro and w2 """
   def build(self, t, c, m):
     b.chdir(self.key)
     r = self.autogen("./autogen.sh", t)
-    r = r + " --enable-shared"
     b.run(r)
     self.makeInstall(m)
 
@@ -120,29 +160,48 @@ class buildG2CLIB(BuildThird):
 
 class buildUDUNITS(BuildTar):
   """ Build udunits library """
-  pass
   def checkRequirements(self):
     # UDUNITS2 wants the expat-devel XML library
     req = True
     req = req & b.checkRPM("expat-devel")
     return req
+  def build(self, t, c, m):
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    # Only one binary in here, lol
+    #r = r + " --bindir="+t+"/bin/UDUNITS"
+    b.run(r)
+    self.makeInstall(m)
 
 class buildHDF5(BuildTar):
-  """ Build udunits library """
-  pass
+  """ Build HDF5 library """
+  def build(self, t, c, makeFlags):
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    r = r + " --bindir="+t+"/bin/HDF5"
+    b.run(r)
+    self.makeInstall(makeFlags)
 
 class buildNETCDF(BuildTar):
   """ Build netcdf library """
-  pass
+  def build(self, t, c, m):
+    """ Build netcdf library """
+    b.chdir(self.key)
+    r = self.autogen("./configure", t)
+    #r = r + " --bindir="+t+"/bin/NETCDF"  # See below too
+    b.run(r)
+    self.makeInstall(m)
+    # If we put NETCDF into own folder, put a link to ncdump in bin
+    #b.runOptional("ln -s "+t+"/NETCDF/ncdump "+t+"/bin/ncdump")
 
 class buildNETCDFPLUS(BuildTar):
   """ Build netcdf c++ library """
   def build(self, t, c, m):
+    """ Build netcdf library """
     b.chdir(self.key)
-    # f***** brain dead netcdfc++.  We really need to kill this library from w2 like in RAMP
-    #os.environ["CPPFLAGS"] = "-I"+t+"/include/"
     r = self.autogen("./configure", t)
-    r = r + " --enable-shared --enable-cxx-4"
+    #r = r + " --bindir="+t+"/bin/NETCDF"
+    r = r + " --enable-cxx-4"
     b.run(r)
     self.makeInstall(m)
 
@@ -151,7 +210,6 @@ class buildORPGINFR(BuildTar):
   def build(self, t, c, m):
     b.chdir(self.key)
     r = self.autogen("./autogen.sh", t)
-    r = r +" --enable-shared"
     b.run(r)
     b.run("chmod a+x ./LinkLib008")
     self.makeInstall(m)
@@ -161,13 +219,22 @@ class buildGDAL(BuildTar):
   def build(self, t, c, m):
     b.chdir(self.key)
     r = self.autogen("./configure", t)
-    r = r + " --without-mysql --without-python --with-jpeg=no --with-gif=no --without-ogr --with-geos=no --with-pg=no --with-pic --with-hdf5=no --with-ogr=no"
+    r = r + " --bindir="+t+"/bin/GDAL"  # See below
+    r = r + " --without-mysql --without-python --with-jpeg=no --with-gif=no --without-ogr --with-geos=no --with-pg=no --with-pic --with-ogr=no"
     r = r + " --with-libtiff=internal"    # Use internal?  RPM might be stock
     r = r + " --with-png="+t              # Use built one
     r = r + " --with-jasper="+t           # Use built one
-    r = r + " --without-grib"             # conflict with g2clib
+    r = r + " --with-curl="+t             # Use built one
+    r = r + " --with-hdf5="+t             # Use built one
+    r = r + " --with-netcdf="+t           # Use built one
+    r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
+    r = r + " --with-sqlite3=no"          # Disable snagging it 
     b.run(r)
     self.makeInstall(m)
+    # M4 has to find gdal-config...
+    # The 'test' does GDAL_CFLAGS and GDAL_LIBS from bin/gdal-config.  Wondering if we should do it here
+    # instead of m4...
+    b.runOptional("ln -s "+t+"/bin/GDAL/gdal-config "+t+"/bin/gdal-config") # M4 has to find gdal-config
 
 class buildDualpol(BuildTar):
   """ Build base dualpol library """
@@ -208,8 +275,12 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildJASPER("jasper-1.900.1"))
     l.append(buildG2CLIB("g2clib-1.6.0")) # Require jasper
 
+    # HDF/Netcdf requires zlib and curl (redhat five fails horribly without this)
+    l.append(buildZLIB("zlib-1.2.11"))  # For Netcdf4
+    l.append(buildCURL("curl-7.55.0"))  # For Netcdf4
+
     # Projection libraries
-    l.append(buildGCTPC("gctpc"))
+    l.append(buildGCTPC("gctpc")) 
     l.append(buildProj4("proj-4.9.3"))
 
     # Netcdf libraries
@@ -277,8 +348,8 @@ class ThirdPartyBuild(BuilderGroup):
     #mark1.write("\n")
     #mark1.close()
 
-    print("Finished third party...\n");
+    print("Finished third party...");
 
 # Run main
 if __name__ == "__main__":
-  print "Run the main build script...\n"
+  print("Run the main build script...")
