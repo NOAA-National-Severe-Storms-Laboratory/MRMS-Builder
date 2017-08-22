@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # Robert Toomey May 2017
 # Classes to build MRMS Severe (WDSS2)
@@ -12,27 +12,33 @@ WDSS2 = "WDSS2"
 
 class buildW2(Builder):
   """ Build W2 library """
-  def build(self, t, c, m):
-    w2 = t+"/"+WDSS2+"/w2"
+  def build(self, target):
+    w2 = target+"/"+WDSS2+"/w2"
     b.chdir(w2)
-    b.run("./autogen.sh --prefix="+t+" --enable-shared ")
-    self.makeInstall(m)
+    r = self.autogen("./autogen.sh", target)
+    b.run(r)
+    #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
+    self.makeInstall()
 
 class buildW2algs(Builder):
   """ Build W2algs library """
-  def build(self, t, c, m):
-    w2algs = t+"/"+WDSS2+"/w2algs"
+  def build(self, target):
+    w2algs = target+"/"+WDSS2+"/w2algs"
     b.chdir(w2algs)
-    b.run("./autogen.sh --prefix="+t+" --enable-shared ")
-    self.makeInstall(m)
+    #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
+    r = self.autogen("./autogen.sh", target)
+    b.run(r)
+    self.makeInstall()
 
 class buildW2ext(Builder):
   """ Build W2ext library """
-  def build(self, t, c, m):
-    w2ext = t+"/"+WDSS2+"/w2ext"
+  def build(self, target):
+    w2ext = target+"/"+WDSS2+"/w2ext"
     b.chdir(w2ext)
-    b.run("./autogen.sh --prefix="+t+" --enable-shared ")
-    self.makeInstall(m)
+    #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
+    r = self.autogen("./autogen.sh", target)
+    b.run(r)
+    self.makeInstall()
 
 class buildW2tools(Builder):
   """ Build W2tools library """
@@ -43,15 +49,18 @@ class buildW2tools(Builder):
 
   def setWantGUI(self, flag):
     self.myWantGUI = flag
-  def build(self, t, c, m):
-    w2tools = t+"/"+WDSS2+"/w2tools"
+  def build(self, target):
+    w2tools = target+"/"+WDSS2+"/w2tools"
     b.chdir(w2tools)
     if self.myWantGUI:
       add = " --with-gtk=yes"
     else:
       add = " --with-gtk=no"
-    b.run("./autogen.sh --prefix="+t+" --enable-shared "+add)
-    self.makeInstall(m)
+    #b.run("./autogen.sh --prefix="+target+" --enable-shared "+add)
+    r = self.autogen("./autogen.sh", target)
+    r = r + add
+    b.run(r)
+    self.makeInstall()
   def checkRequirements(self):
     req = True
     if self.myWantGUI:
@@ -73,7 +82,7 @@ class MRMSSevereBuild(BuilderGroup):
   def checkout(self, target, password):
     b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password)
 
-  def build(self, target, configFlags, makeFlags):
+  def build(self, target):
     """ Build WDSS2 (MRMS_Severe) """
     print("\nBuilding WDSS2 (MRMS_Severe) libraries...")
 
@@ -84,7 +93,7 @@ class MRMSSevereBuild(BuilderGroup):
 
     # Build all builders...
     for build in self.myBuilders:
-      build.build(target, configFlags, makeFlags)
+      build.build(target)
 
     # Put a check ldd script into the bin directory
     # Maybe this shouldn't be in this code here
@@ -93,6 +102,15 @@ class MRMSSevereBuild(BuilderGroup):
   def setWantGUI(self, flag):
     """ Do we want to compile the GUI? """
     self.myW2Tools.setWantGUI(flag)
+
+  def getKeyLocation(self, target, isResearch):
+    """ Return path to a built in authentication key """
+    path = target+"/"+WDSS2+"/w2/w2config/auth/"
+    if isResearch:
+      path += "research/key"
+    else:
+      path += "default/key"
+    return path
 
 # Run main
 if __name__ == "__main__":

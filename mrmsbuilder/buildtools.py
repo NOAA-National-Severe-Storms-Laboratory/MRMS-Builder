@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # Robert Toomey March 2017
 # Build tools

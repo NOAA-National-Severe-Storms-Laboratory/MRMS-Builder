@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # Robert Toomey March 2017
 # Build from compressed sources.
@@ -36,42 +36,42 @@ class BuildThird(Builder):
   """ build a third party from compressed source and stock configure """
   def clean(self):
     b.runOptional("rm -rf "+self.key)
-  #def build(self, t, c, m): This is too confusing at moment
+  #def build(self, target): This is too confusing at moment
   #  b.chdir(self.key)
-  #  r = self.autogen("./configure", t)
+  #  r = self.autogen("./configure", target)
   #  b.run(r)
-  #  self.makeInstall(m)
+  #  self.makeInstall()
 
 class BuildTar(BuildThird):
   """ build a third party from a stock tar.gz """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar.gz "+t)
+  def copy(self, target):
+    b.run("cp "+self.key+".tar.gz "+target)
   def unzip(self):
     b.run("tar xvf "+self.key+".tar.gz")
 
 class BuildZip(BuildThird):
   """ build a third party from a stock zip """
-  def copy(self, t):
-    b.run("cp "+self.key+".zip "+t)
+  def copy(self, target):
+    b.run("cp "+self.key+".zip "+target)
   def unzip(self):
     b.run("unzip "+self.key+".zip")
 
 class buildGCTPC(BuildTar):
   """ Build ancient GCTPC projection library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
     b.chdir("source")
     b.run("make")
-    b.run("cp libgeo.a "+t+"/lib/libgeo.a")
-    b.run("cp *.h "+t+"/include/.")
+    b.run("cp libgeo.a "+target+"/lib/libgeo.a")
+    b.run("cp *.h "+target+"/include/.")
 
 class buildProj4(BuildTar):
   """ Build proj4 library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
+    r = self.autogen("./configure", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildZLIB(BuildTar):
   """ Build ZLIB library """
@@ -81,68 +81,68 @@ class buildZLIB(BuildTar):
   def ldFlags(self, target):
     """ LDFLAGS doesn't work with configure zlib """
     return ""
-  def build(self, t, c, m):
+  def build(self, target):
     """ Build ZLIB """
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
+    r = self.autogen("./configure", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildCURL(BuildTar):
   """ Build CURL library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
     #r = self.autogen("./configure", t)
     #r = self.autogen("./configure", t)
-    r = "./configure --prefix="+t+" --with-zlib="+t
+    r = "./configure --prefix="+target+" --with-zlib="+target
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildWgrib2(BuildTar):
   """ Build Wgrib2 grib2 manipulation tool and library for hydro """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    os.environ["CPPFLAGS"] = self.localInclude(t)
-    os.environ["LDFLAGS"] = self.localLink(t)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
+    os.environ["CPPFLAGS"] = self.localInclude(target)
+    os.environ["LDFLAGS"] = self.localLink(target)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
     b.run("make")
-    b.run("cp wgrib2 "+t+"/bin/wgrib2")
-    b.runOptional("mkdir "+t+"/include/wgrib2/")
-    b.run("cp *.h "+t+"/include/wgrib2/.")
+    b.run("cp wgrib2 "+target+"/bin/wgrib2")
+    b.runOptional("mkdir "+target+"/include/wgrib2/")
+    b.run("cp *.h "+target+"/include/wgrib2/.")
     os.environ["CPPFLAGS"] = ""
     os.environ["LDFLAGS"] = ""
 
 class buildJASPER(BuildZip):
   """ Build Jasper library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
-    r = r + " --bindir="+t+"/bin/JASPER"
+    r = self.autogen("./configure", target)
+    r = r + " --bindir="+target+"/bin/JASPER"
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildLIBPNG(BuildTar):
   """ Build libpng library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
+    r = self.autogen("./configure", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildHMRGW2(BuildTar):
   """ Build HMRGW2 library to link hydro and w2 """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./autogen.sh", t)
+    r = self.autogen("./autogen.sh", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildG2CLIB(BuildThird):
   """ Build g2clib library """
-  def copy(self, t):
-    b.run("cp "+self.key+".tar "+t)
+  def copy(self, target):
+    b.run("cp "+self.key+".tar "+target)
   def unzip(self):
     b.run("tar xvf "+self.key+".tar")
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
     # Brain dead g2lib doesn't have a configure.  Seriously?
     # Move the original makefile and make a new one using it...
@@ -150,13 +150,13 @@ class buildG2CLIB(BuildThird):
     nmake = open("makefile", 'w')
     nmake.write("# Robert Toomey.  Override g2clib make for our own purposes.\n")
     nmake.write("include makefileBASE\n")
-    nmake.write("INC=-I"+t+"/include\n")
+    nmake.write("INC=-I"+target+"/include\n")
     #nmake.write("CFLAGS= -O3 -g -m64 $(INC) $(DEFS) -D__64BIT__\n")
     nmake.write("CFLAGS= -O3 -g -m64 $(INC) $(DEFS)\n")
     nmake.close()
     b.run("make")
-    b.run("cp libg2c*a "+t+"/lib")
-    b.run("cp *.h "+t+"/include")
+    b.run("cp libg2c*a "+target+"/lib")
+    b.run("cp *.h "+target+"/include")
 
 class buildUDUNITS(BuildTar):
   """ Build udunits library """
@@ -165,102 +165,102 @@ class buildUDUNITS(BuildTar):
     req = True
     req = req & b.checkRPM("expat-devel")
     return req
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
+    r = self.autogen("./configure", target)
     # Only one binary in here, lol
     #r = r + " --bindir="+t+"/bin/UDUNITS"
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildHDF5(BuildTar):
   """ Build HDF5 library """
-  def build(self, t, c, makeFlags):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
-    r = r + " --bindir="+t+"/bin/HDF5"
+    r = self.autogen("./configure", target)
+    r = r + " --bindir="+target+"/bin/HDF5"
     b.run(r)
-    self.makeInstall(makeFlags)
+    self.makeInstall()
 
 class buildNETCDF(BuildTar):
   """ Build netcdf library """
-  def build(self, t, c, m):
+  def build(self, target):
     """ Build netcdf library """
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
+    r = self.autogen("./configure", target)
     #r = r + " --bindir="+t+"/bin/NETCDF"  # See below too
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
     # If we put NETCDF into own folder, put a link to ncdump in bin
     #b.runOptional("ln -s "+t+"/NETCDF/ncdump "+t+"/bin/ncdump")
 
 class buildNETCDFPLUS(BuildTar):
   """ Build netcdf c++ library """
-  def build(self, t, c, m):
+  def build(self, target):
     """ Build netcdf library """
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
+    r = self.autogen("./configure", target)
     #r = r + " --bindir="+t+"/bin/NETCDF"
     r = r + " --enable-cxx-4"
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildORPGINFR(BuildTar):
   """ Build orpginfr library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./autogen.sh", t)
+    r = self.autogen("./autogen.sh", target)
     b.run(r)
     b.run("chmod a+x ./LinkLib008")
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildGDAL(BuildTar):
   """ Build gdal library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./configure", t)
-    r = r + " --bindir="+t+"/bin/GDAL"  # See below
+    r = self.autogen("./configure", target)
+    r = r + " --bindir="+target+"/bin/GDAL"  # See below
     r = r + " --without-mysql --without-python --with-jpeg=no --with-gif=no --without-ogr --with-geos=no --with-pg=no --with-pic --with-ogr=no"
     r = r + " --with-libtiff=internal"    # Use internal?  RPM might be stock
-    r = r + " --with-png="+t              # Use built one
-    r = r + " --with-jasper="+t           # Use built one
-    r = r + " --with-curl="+t             # Use built one
-    r = r + " --with-hdf5="+t             # Use built one
-    r = r + " --with-netcdf="+t           # Use built one
+    r = r + " --with-png="+target         # Use built one
+    r = r + " --with-jasper="+target      # Use built one
+    r = r + " --with-curl="+target        # Use built one
+    r = r + " --with-hdf5="+target        # Use built one
+    r = r + " --with-netcdf="+target      # Use built one
     r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
     r = r + " --with-sqlite3=no"          # Disable snagging it 
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
     # M4 has to find gdal-config...
     # The 'test' does GDAL_CFLAGS and GDAL_LIBS from bin/gdal-config.  Wondering if we should do it here
     # instead of m4...
-    b.runOptional("ln -s "+t+"/bin/GDAL/gdal-config "+t+"/bin/gdal-config") # M4 has to find gdal-config
+    b.runOptional("ln -s "+target+"/bin/GDAL/gdal-config "+target+"/bin/gdal-config") # M4 has to find gdal-config
 
 class buildDualpol(BuildTar):
   """ Build base dualpol library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    r = self.autogen("./autogen.sh", t)
+    r = self.autogen("./autogen.sh", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildDualpolRRDD(BuildTar):
   """ Build dualpol RRDD library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    pathDualpol(t)
-    r = self.autogen("./autogen.sh", t)
+    pathDualpol(target)
+    r = self.autogen("./autogen.sh", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class buildDualpolQPE(BuildTar):
   """ Build base dualpol QPE library """
-  def build(self, t, c, m):
+  def build(self, target):
     b.chdir(self.key)
-    pathDualpol(t)
-    r = self.autogen("./autogen.sh", t)
+    pathDualpol(target)
+    r = self.autogen("./autogen.sh", target)
     b.run(r)
-    self.makeInstall(m)
+    self.makeInstall()
 
 class ThirdPartyBuild(BuilderGroup):
   """ Build all of required third party """
@@ -311,7 +311,7 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildGDAL("gdal-2.1.3"))
     self.myBuilders = l
 
-  def build(self, target, configFlags, makeFlags):
+  def build(self, target):
     """ Build third party used by all packages """
 
     print("Building third party libraries: " +target) 
@@ -339,7 +339,7 @@ class ThirdPartyBuild(BuilderGroup):
 
     # Build all builders...
     for build in self.myBuilders:
-      build.build(target, configFlags, makeFlags)
+      build.build(target)
       b.chdir(tbase)
 
     # came back so mark a good build...

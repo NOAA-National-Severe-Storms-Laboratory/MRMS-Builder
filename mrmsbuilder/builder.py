@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # Robert Toomey May 2017
 # Class for building 'something'
@@ -9,16 +9,24 @@ class Builder:
   """ Build a individual package such as 'netcdf' """
   def __init__(self, key):
     self.key = key
+    self.cppflags = ""
+    self.makeflags = ""
+  def setCPPFlags(self, stuff):
+    """ Set extra flags for cppflags """
+    self.cppflags = stuff
+  def setMakeFlags(self, stuff):
+    """ Set extra flags for make """
+    self.makeflags = stuff
   def clean(self):
     """ Clean up.  For example, Third party removes the uncompressed folder. """
     pass 
-  def copy(self, t):
+  def copy(self, target):
     """ Copy self to destination """
     pass
   def unzip(self):
     """ Do any unpacking needed.  Third party libraries are typically compressed """
     pass
-  def build(self, t, c, m):
+  def build(self, target):
     """ Run all build commands. target, config/autogen options, make options """
     pass
   def showkey(self):
@@ -32,7 +40,7 @@ class Builder:
     return True
   def localInclude(self, target):
     """ Stock cpp option that include our build include (always use our source first) """
-    return "-I"+target+"/include/ -Wl,-rpath="+target+"/lib"
+    return "-I"+target+"/include/ -Wl,-rpath="+target+"/lib "+self.cppflags
   def localLink(self, target):
     """ Stock ldflags that include our build lib (always use our libs first) """
     return "-L"+target+"/lib/"
@@ -61,9 +69,9 @@ class Builder:
     prefixflags = self.prefixFlags(target)
     shareFlags = self.shareFlags()
     return prefix+prefixflags+cppflags+ldflags+shareFlags
-  def makeInstall(self, makeflags):
+  def makeInstall(self):
     """ Do the stock make and make install in a build """
-    b.run("make "+makeflags)
+    b.run("make "+self.makeflags)
     b.run("make install")
 
 class BuilderGroup:
@@ -93,6 +101,14 @@ class BuilderGroup:
     """ List all builder keys """
     for build in self.myBuilders:
       print("Builder: "+build.getKey())
+  def setCPPFlags(self, stuff):
+    """ Set extra flags for cppflags """
+    for build in self.myBuilders:
+      build.setCPPFlags(stuff)
+  def setMakeFlags(self, stuff):
+    """ Set extra flags for make """
+    for build in self.myBuilders:
+      build.setMakeFlags(stuff)
   def checkRequirements(self):
     """ Check requirements for this builder. """
     req = True
@@ -101,5 +117,5 @@ class BuilderGroup:
     return req
   def checkout(self, target, password):
     pass
-  def build(self, target, configFlags, makeFlags):
+  def build(self, target):
     pass

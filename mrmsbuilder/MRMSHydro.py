@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # Robert Toomey May 2017
 # Classes to build MRMS Hydro
@@ -12,11 +12,11 @@ HYDRO = "HMET"
 
 class buildHydro(Builder):
   """ Build Hydro library """
-  def build(self, t, c, m):
-    hbase = t+"/"+HYDRO+"/"
+  def build(self, target):
+    hbase = target+"/"+HYDRO+"/"
     b.chdir(hbase)
-    b.run("./autogen.sh --prefix="+t+" --enable-shared ")
-    self.makeInstall(m)
+    b.run("./autogen.sh --prefix="+target+" --enable-shared ")
+    self.makeInstall()
 
 class MRMSHydroBuild(BuilderGroup):
   """ Build all of MRMS Hydro """
@@ -29,7 +29,7 @@ class MRMSHydroBuild(BuilderGroup):
   def checkout(self, target, password):
     b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password)
 
-  def build(self, target, configFlags, makeFlags):
+  def build(self, target):
     """ Build HYDRO (MRMS_Hydro) """
     print("\nBuilding HYDRO (MRMS_Hydro) libraries...")
 
@@ -40,7 +40,7 @@ class MRMSHydroBuild(BuilderGroup):
 
     # Build all builders...
     for build in self.myBuilders:
-      build.build(target, configFlags, makeFlags)
+      build.build(target)
 
     # Put a check ldd script into the bin directory
     # Maybe this shouldn't be in this code here
