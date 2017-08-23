@@ -304,8 +304,12 @@ def checkoutSVN(what,where, password):
   """ Checkout a single SVN repository """
 
   global SVNROOT
-  whatfull = unicode(SVNROOT+what, "utf-8")
-  wherefull = unicode(where, "utf-8")
+  if sys.version_info <(3,0):
+    whatfull = unicode(SVNROOT+what, "utf-8")
+    wherefull = unicode(where, "utf-8")
+  else:
+    whatfull = SVNROOT+what
+    wherefull = where
   command = (u"svn co "+whatfull+u" "+wherefull)
   child = pexpect.spawnu(command)
 
