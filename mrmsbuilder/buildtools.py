@@ -7,11 +7,14 @@
 SVNMACHINE = "vmrms-ark.protect.nssl"
 SVNPATH ="/localdata/svn"
 
+# System imports
 import os,sys
 import subprocess
 import pexpect
-import filecompleter
 import readline
+
+# Relative imports
+from . import filecompleter
 
 red = "\033[1;31m"
 blue = "\033[1;34m"
@@ -26,11 +29,17 @@ def runRead(stuff):
     #$proc = subprocess.Popen("rpm","-qi "+target, stdout=subprocess.PIPE)
     proc = subprocess.Popen(stuff,stdout=subprocess.PIPE)
     lines = []
-    for line in iter(proc.stdout.readline,''):
-      lines.append(line.rstrip())
+    # Work with python 3 and 2
+    while True:
+      line = proc.stdout.readline()
+      line = line.decode('ascii').rstrip()  # python 2.7 supports but 3 needs it
+      if line == '' and proc.poll() is not None:
+        break
+      if line:
+        lines.append(line.rstrip())
+        
     return lines
-  #except Exception as e: #Gotta support older python
-  except Exception, e:
+  except Exception as e: #Gotta support older python
     print ("Exception trying to execute command:" + str(e))
     return []
 
@@ -140,8 +149,7 @@ def pickSmarter(prompt, promptList, defOption, restrict, flag):
         index = int(newo)
         if (index > 0) and (index <= half):
           return promptList[(index-1)*2]
-      #except Exception as e: #Gotta support older python
-      except Exception, e:
+      except Exception as e: 
         print("Exception: "+str(e))
         # It's ok, just ask for another choise
         pass
@@ -156,7 +164,7 @@ def pickOption1(prompt, promptList, optionList, defOption, restrict, flag):
   while True:
 
     # Print prompt
-    print prompt
+    print(prompt)
    
     # Display the options and option prompts
     for x in range(len(promptList)):

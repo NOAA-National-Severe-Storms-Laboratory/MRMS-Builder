@@ -3,7 +3,7 @@
 # Robert Toomey May 2017
 # Class for building 'something'
 # until I figure where best to put it
-import buildtools as b
+from . import buildtools as b
 
 class Builder:
   """ Build a individual package such as 'netcdf' """

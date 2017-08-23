@@ -4,10 +4,13 @@
 # Build from compressed sources.
 # This is used to build a third party source directory
 
+# System imports
 import os,sys
-import buildtools as b
-from builder import Builder
-from builder import BuilderGroup
+
+# Relative imports
+from . import buildtools as b
+from .builder import Builder
+from .builder import BuilderGroup
 
 dualSet = 0
 

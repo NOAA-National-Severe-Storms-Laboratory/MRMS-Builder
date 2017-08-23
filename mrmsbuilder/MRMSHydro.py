@@ -3,10 +3,13 @@
 # Robert Toomey May 2017
 # Classes to build MRMS Hydro
 
+# System imports
 import os,sys
-import buildtools as b
-from builder import Builder
-from builder import BuilderGroup
+
+# Relative imports
+from . import buildtools as b
+from .builder import Builder
+from .builder import BuilderGroup
 
 HYDRO = "HMET"
 

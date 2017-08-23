@@ -5,15 +5,14 @@
 # Utility library class for reading pair values from a
 # configuration file
 
-import os,sys
-import filecompleter
-import readline
-import buildtools as b
-
-# Time for expire function
-from datetime import timedelta
+# System imports
+import os,sys,readline,multiprocessing
+from datetime import timedelta # Time for expire function
 from datetime import datetime
-import multiprocessing
+
+# Relative imports
+from . import filecompleter
+from . import buildtools as b
 
 red = "\033[1;31m"
 blue = "\033[1;34m"
@@ -52,7 +51,7 @@ class Configuration:
                pair[0] = self.cleanText(pair[0])
                pair[1] = self.cleanText(pair[1])
              map1[pair[0]] = pair[1]
-     except Exception, e: # old style for p 2.7
+     except Exception as e:  # python 2.7 up
        error = "Couldn't read file "+configFile+"\nReason:"+str(e)
        return error
      return map1
@@ -268,7 +267,7 @@ class Configuration:
         thentime = nowtime+timedelta(seconds=seconds)
         #print("EXPIRING build in "+str(seconds)+" seconds...")
         good = True 
-      except Exception, e:
+      except Exception as e:  # python 2.7 up
         pass  # Don't print first error
 
     # Check for full exact date given
@@ -280,7 +279,7 @@ class Configuration:
           print("EXPIRE set to a date less than a week in future...")
           sys.exit()
         good = True
-      except Exception, e:
+      except Exception as e:  # python 2.7 up
         print("Couldn't convert EXPIRE to number or date, date format is "+dateformat)
         print("exception was: "+str(e))
         sys.exit() # Do we recover?  This is probably error in config file
@@ -314,7 +313,7 @@ class Configuration:
       try:
         v = finalmap[k]
         print("--->Overrode key '"+k+"' value of '"+v+"' to value of '"+map2[k]+"'")
-      except Exception, e:
+      except Exception as e:  # python 2.7 up
         pass
       finalmap[k] = map2[k]
     return finalmap

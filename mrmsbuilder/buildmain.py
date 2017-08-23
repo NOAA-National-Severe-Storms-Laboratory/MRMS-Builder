@@ -4,25 +4,21 @@
 # Attempt to streamline the building process
 # into something easier and braindead.
 
+# System imports
 import getpass,datetime,os
-import sys
-import subprocess
+import sys,re
 from subprocess import Popen, PIPE
 from os.path import expanduser
-import buildtools as b
-#import filecompleter
-import config as config
+
+# Relative imports (should work on 2 and 3)
+from . import buildtools as b
+from . import config as config
 
 # Import the main group builders from all modules
 # You'd add a module here if needed
-from ThirdParty import ThirdPartyBuild
-from MRMSSevere import MRMSSevereBuild
-from MRMSHydro import MRMSHydroBuild
-
-import ThirdParty
-import MRMSSevere
-import MRMSHydro
-import re
+from .ThirdParty import ThirdPartyBuild
+from .MRMSSevere import MRMSSevereBuild
+from .MRMSHydro import MRMSHydroBuild
 
 red = "\033[1;31m"
 blue = "\033[1;34m"
@@ -190,7 +186,7 @@ def buildMRMS():
   # Get all the "-D" cppflag options Lak spammed us with (see below)
   if buildWDSS2 == True:
     ourDFlags = theConf.getOurDFlags()
-    print("DEBUG:Ok OUR cppflags are:")+str(ourDFlags)
+    print("DEBUG:Ok OUR cppflags are:"+str(ourDFlags))
     #print("Expire flags: '"+expireFlags+"'")
     #  $ENV{CXXFLAGS} = "$required_flags $optimized $debug $sunrise $sunset $export_flags ${key_flags} $param{cxxflags}";
 
@@ -205,7 +201,7 @@ def buildMRMS():
      if bg.getBuild():  # Only check if we're building it?
        req = req & bg.checkRequirements()
   if req == False:
-    print "Missing installed libraries or rpms to build, contact IT to install.\n"
+    print("Missing installed libraries or rpms to build, contact IT to install.")
     sys.exit(1)
   ###################################################
 
@@ -247,4 +243,4 @@ def buildMRMS():
   b.setupSVN(user, True)
 
 if __name__ == "__main__":
-  print "Run the ./build.py script to execute\n"
+  print("Run the ./build.py script to execute")
