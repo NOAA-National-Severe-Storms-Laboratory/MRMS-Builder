@@ -192,6 +192,8 @@ class buildNETCDF(BuildTar):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     #r = r + " --bindir="+t+"/bin/NETCDF"  # See below too
+    """ Make sure the base netcdf library has netcdf4 support built in. """
+    r = r + " --enable-netcdf-4"
     b.run(r)
     self.makeInstall()
     # If we put NETCDF into own folder, put a link to ncdump in bin
@@ -201,10 +203,11 @@ class buildNETCDFPLUS(BuildTar):
   """ Build netcdf c++ library """
   def build(self, target):
     """ Build netcdf library """
+    """ Add special flag to get netcdf4 support. """
+    self.cppflags += "-DUSE_NETCDF4"
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     #r = r + " --bindir="+t+"/bin/NETCDF"
-    r = r + " --enable-cxx-4"
     b.run(r)
     self.makeInstall()
 
