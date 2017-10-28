@@ -164,6 +164,7 @@ def buildMRMS():
   print("Using config file: "+configFile+" "+red+confResult+coff)
   print(line)
   print("Hi, "+blue+user+coff+", I'm your hopefully helpful builder.")
+  print("Modify default.cfg and/or answer questions below:")
 
   #wantAdvanced = theConf.getBoolean("ADVANCED", "Do you want to see advanced options and tools?", "no")
   checkout = True
@@ -172,6 +173,15 @@ def buildMRMS():
   buildWDSS2 = theConf.getBoolean("WDSS2", "Build WDSS2 packages?", "yes")
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
   buildGUI = theConf.getBoolean("GUI", "Build the WG display gui (requires openGL libraries installed)?", "yes")
+
+  isResearch = False
+  isExport = False
+  if (buildWDSS2):  # These flags only matter for WDSS2 part (for now at least)
+    isResearch = theConf.getBoolean("RESEARCH", "Is this a research build (no realtime, no encryption)", "no")
+    if (isResearch):
+      isExport = True # Research version automatically loses encryption
+    else:
+      isExport = theConf.getBoolean("EXPORT", "Is this an exported build (For outside US, turn off encryption)", "no")
 
   # Builder group packages, add in dependency order
   # To add a new module, add an 'from' import at top and add a line here
@@ -186,7 +196,9 @@ def buildMRMS():
   # Get all the "-D" cppflag options Lak spammed us with (see below)
   if buildWDSS2 == True:
     ourDFlags = theConf.getOurDFlags()
-    print("DEBUG:Ok OUR cppflags are:"+str(ourDFlags))
+    if isExport:
+      ourDFlags["EXPORT_VERSION"] = "" 
+    #print("DEBUG:Ok OUR cppflags are:"+str(ourDFlags))
     #print("Expire flags: '"+expireFlags+"'")
     #  $ENV{CXXFLAGS} = "$required_flags $optimized $debug $sunrise $sunset $export_flags ${key_flags} $param{cxxflags}";
 
@@ -225,13 +237,11 @@ def buildMRMS():
     # Basically we use any -D values from Lak's auth files, overridden
     # by anything we express in our configure...and all these go to 
     # cppflags on make command line... 
-    isResearch = False
     keypath = mrmssevere.getKeyLocation(folder, isResearch)
     authFileDFlags = theConf.getAuthFileDItems(keypath)
     map1 = theConf.mergeConfigLists(ourDFlags, authFileDFlags) # 2nd overrides...
     w2cppflags = theConf.listToDFlags(map1)
     mrmssevere.setCPPFlags(w2cppflags)
-    #print "DEBUG: CPPFLAGS= "+w2cppflags
 
   # Build everything wanted (order matters here)
   for bg in bl:

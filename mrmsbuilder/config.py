@@ -86,7 +86,11 @@ class Configuration:
       readline.parse_and_bind("")
       readline.set_completer(None)
 
-  def promptFileDir(self, prompt, default_value):
+  def printPrompt(self, key, prompt):
+    """ Print prompt for a given key variable """
+    print("'"+key+"' "+prompt)
+   
+  def promptFileDir(self, key, prompt, default_value):
     """ Prompt for a file or directory with autocomplete """
     # Make the default option the true/false given
     o = default_value
@@ -97,7 +101,7 @@ class Configuration:
     while True:
 
       # Print prompt
-      print(prompt)
+      self.printPrompt(key,prompt)
 
       # Get input
       newo = b.getInput(o)
@@ -123,7 +127,7 @@ class Configuration:
        return default_value
      else:
        #v = self.promptString(prompt, default_value)
-       v = self.promptFileDir(prompt, default_value)
+       v = self.promptFileDir(key, prompt, default_value)
 
     self.history = self.history+prompt+" --> "
     if v == True:
@@ -133,7 +137,7 @@ class Configuration:
     self.history += str(v)+coff+"\n"
     return v
 
-  def promptString(self, prompt, defOption):
+  def promptString(self, key, prompt, defOption):
     """ Prompt for a string """
     # Make the default option the true/false given
     o = defOption
@@ -144,8 +148,7 @@ class Configuration:
     while True:
 
       # Print prompt
-      print(prompt)
-      #print(blue+"Type in yes or no or enter for default:"+coff)
+      self.printPrompt(key,prompt)
 
       # Get input
       newo = b.getInput(o)
@@ -164,7 +167,7 @@ class Configuration:
      if prompt == "":
        return default_value
      else:
-       v = self.promptString(prompt, default_value)
+       v = self.promptString(key, prompt, default_value)
 
     self.history = self.history+prompt+" --> "
     if v == True:
@@ -174,7 +177,7 @@ class Configuration:
     self.history += str(v)+coff+"\n"
     return v
 
-  def promptBoolean(self, prompt, default_value):
+  def promptBoolean(self, key, prompt, default_value):
     """ Prompt for a boolean value """
     # Make the default option the true/false given
     o = default_value
@@ -185,8 +188,7 @@ class Configuration:
     while True:
 
       # Print prompt
-      print(prompt)
-      #print(blue+"Type in yes or no or enter for default:"+coff)
+      self.printPrompt(key,prompt)
 
       # Get input
       newo = b.getInput(o)
@@ -216,7 +218,7 @@ class Configuration:
       if prompt == "":
         return default_value
       else:
-        v = self.promptBoolean(prompt, default_option)
+        v = self.promptBoolean(key, prompt, default_option)
   
     self.history = self.history+prompt+" --> "
     if v == True:
@@ -323,5 +325,8 @@ class Configuration:
     # Now create a single cppflag string with all "-D" options
     cppflags = ""
     for k in map1:
-       cppflags = cppflags +"-D"+k+"="+map1[k]+" "
+       if map1[k] == "":
+         cppflags = cppflags +"-D"+k+" "
+       else:
+         cppflags = cppflags +"-D"+k+"="+map1[k]+" "
     return cppflags
