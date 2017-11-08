@@ -43,6 +43,16 @@ def runRead(stuff):
     print ("Exception trying to execute command:" + str(e))
     return []
 
+def checkFirstText(stuff, text):
+  """ Run a command, check for text in the first line of output """
+  good = False
+  lines = runRead(stuff)
+  if len(lines) > 0:
+    s = lines[0]
+    if text in s:
+      good = True
+  return good
+
 def checkRPM(prefix):
   """ Check existance of a RPM by prefix """
   lines = runRead(["rpm", "-qi", prefix])

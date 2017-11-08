@@ -44,6 +44,20 @@ AC_DEFUN([W2_WITH_GTK],
      AM_CONDITIONAL(COND_GTK, test x$gtk = xtrue)
     ]
 )
+AC_DEFUN([W2_WITH_PYTHONDEV],
+    [AC_ARG_WITH([pythondev],
+                 [AC_HELP_STRING([--with-pythondev],[build python development (default=no)])],
+                 [case "${withval}" in
+                   no) pythondev=false;;
+                   yes) pythondev=true;;
+                   *) AC_MSG_ERROR([bad value ${withval} for --with-pythondev]);;
+                  esac],[pythondev=true])
+     AM_CONDITIONAL(COND_PYTHONDEV, test x$pythondev = xtrue)
+     dnl if test x"${pythondev}" = xtrue ; then
+     dnl   AC_DEFINE([WITH_PYTHONDEV], [], [w2 python development support])
+     dnl fi
+    ]
+)
 AC_DEFUN([W2_WITH_FAM],
     [AC_ARG_WITH([fam],
                  [AC_HELP_STRING([--with-fam],[w2 event notification via inotify (default=yes)])],
@@ -139,14 +153,6 @@ AC_DEFUN([W2_ENABLE_HIRES],
     ]
 )
 
-AC_DEFUN([W2_SET_CODE_SEARCH_PATH],[
-  #code_search_path="$HOME $HOME/w2 $HOME/include/CODE $HOME/WDSS2 $HOME/WDSS2/include/CODE $HOME/WDSSII $PWD/.. $PWD/../include/code /usr/local /usr /usr/local/include/CODE /usr/include/CODE /home/wdssii /home/wdssii/include/CODE /nssl/nsslsun/wdssii /nssl/nsslsun/wdssii/include/CODE $WDSSIIDIR $WDSSIIDIR/include/code"
-  #We explicitly set folder checks for everything we build.  Having it hunt everywhere just increases
-  #the buggy chance of grabbing onto something it shouldn't.  Turn it off for now, see if anyone has an
-  #issue and we'll deal with it then. 
-  code_search_path=""
-])
-
 AC_DEFUN([W2_WITH_RSSD],
     [AC_ARG_WITH(
         [rssd],
@@ -204,7 +210,6 @@ AC_DEFUN([W2_ENABLE_PSQL],
     AM_CONDITIONAL(PSQL, test x"${psql}" = xtrue)
     AC_MSG_RESULT("Building psql? ... ${psql}")
     if test x"${psql}" = xtrue; then
-         W2_SET_CODE_SEARCH_PATH()
          W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", "w2psql", SOURCELIBS)
     fi
     ]
@@ -495,7 +500,6 @@ AC_DEFUN([W2_FIND_HEADER_AND_APPEND],[
 #####################  DO COMPLETE CONFIGURATION HERE
 
 AC_DEFUN([CHECK_LDUNITS],[
-  W2_SET_CODE_SEARCH_PATH()
 
   # Use UDUNITS_DIR if given, otherwise use the built 3rd party version
   #ud_inc_search_path="/usr/include /usr/include/udunits2/"
@@ -529,7 +533,6 @@ AC_DEFUN([CHECK_OPENSSL],[
 ])
 
 AC_DEFUN([CHECK_BOOST],[
-  W2_SET_CODE_SEARCH_PATH()
   boost_include_path="$prefix $code_search_path $PWD/.. /usr/include/boost141 /usr/include/boost133"
   boost_lib_path="$prefix $code_search_path $PWD/.. /usr/lib/boost141 /usr/lib/boost133"
 
@@ -797,7 +800,6 @@ AC_DEFUN([CHECK_ORPGINFR],[
 
     # Using libinfr implementation of rss_notifier
     W2_CHECKING_LIBRARY([ORPG's infr libraries])
-    W2_SET_CODE_SEARCH_PATH()
     orpg_search_path="$prefix $HOME $code_search_path /usr/local /usr $HOME/WDSS2"
     orpg_search_path="$orpg_search_path /nssl/nsslsun/wdssii/orpginfr /home/wdssii"
     orpg_search_path="$orpg_search_path $HOME/lib/irix $PWD/../lib/irix"
@@ -870,6 +872,22 @@ AC_DEFUN([CHECK_GTK],[
   AC_SUBST(GTKGLEXT_LIBS)
 ])
 
+AC_DEFUN([CHECK_PYTHONDEV],[
+  W2_WITH_PYTHONDEV()
+  if test x$pythondev = xtrue
+  then
+
+    # Start with the redhat 7 stock python-devel
+    python_search_path="/usr/include/python2.7/"
+
+    AC_CHECKING(for python development header files)
+    W2_FIND_HEADER_AND_APPEND("$PYTHONDEVDIR", "$python_search_path", "Python.h", PYTHONDEVINCLUDE)
+    AC_SUBST(PYTHONDEVINCLUDE)
+  else
+    echo "Python development checking skipped ... --with-pythondev not set."
+  fi
+
+])
 
 AC_DEFUN([CHECK_QT],[
   W2_WITH_QT()
@@ -913,39 +931,6 @@ AC_DEFUN([CHECK_QT],[
   AC_SUBST(QTINCLUDE)
   AC_SUBST(QTLIB)
 ])
-
-dnl AC_DEFUN([CHECK_XLIB],[
-dnl   if test x$qt = xtrue
-dnl   then
-dnl     W2_CHECKING_LIBRARY(X11)
-dnl     x_search_path="/usr/X11R6 /usr/openwin /usr"
-dnl     for tmplib in X11 Xext Xmu Xi; do
-dnl       W2_FIND_LIBRARY_AND_APPEND("$XDIR", "$x_search_path", $tmplib, XLIB)
-dnl     done
-dnl     AC_SUBST(XLIB)
-dnl ])
-
-dnl AC_DEFUN([CHECK_G2C],[
-
-dnl    ## libg2c 
-
-dnl    W2_CHECKING_LIBRARY(libg2c)
-dnl    #g2c_search_path="/usr
-dnl    #                 /usr/local
-dnl    #                 /usr/lib
-dnl    #                 /usr/lib64
-dnl    #                 /usr/lib/i386-linux-gnu
-dnl    #                 /usr/lib/i386-linux-gnu/gcc/i686-linux-gnu/*
-dnl    #                 /usr/lib/gcc/x86_64-redhat-linux/*
-dnl    #                 /usr/lib/gcc/i386-redhat-linux/*
-dnl    #                 /usr/lib/gcc/i686-redhat-linux/*
-dnl    #                /usr/lib/gcc-lib/i386-redhat-linux/*
-dnl    #                 /usr/lib/gcc-lib/ppc-yellowdog-linux/*"
-dnl    #
-dnl    g2c_search_path="/usr/lib64"
-dnl    W2_FIND_LIBRARY_AND_APPEND("$G2CDIR", "$g2c_search_path", "g2c", G2CLIB)
-dnl    AC_SUBST(G2CLIB)
-dnl ])
 
 AC_DEFUN([CHECK_COMPRESSION],[
 
@@ -1098,6 +1083,7 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   # CHECK_BOOST  -- not used
   CHECK_OPENSSL
   #CHECK_PSQL -- not used
+  CHECK_PYTHONDEV
   CHECK_FAM
   CHECK_COMPRESSION
   CHECK_CODE_OS
@@ -1146,8 +1132,6 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
 ##### CODEINCLUDES and CODELIBRARIES are needed by algorithms
 #
 AC_DEFUN([CODE_CONFIGURE],[
-
-  W2_SET_CODE_SEARCH_PATH()
 
   AC_CHECKING(for CODE header files)
   if test -n "$prefix"; then

@@ -13,6 +13,30 @@ from .builder import BuilderGroup
 
 WDSS2 = "WDSS2"
 
+def autoGUICheck():
+  """ Passed for 'auto' mode for the GUI flag """
+  good = False
+
+  # Test 1: We just check for the gl.h header that nvidia or others put on here...
+  if b.checkFirstText(["file", "/usr/include/GL/gl.h"], "ASCII text"):
+  # Test 2: Check gtkglext-devel rpm...
+    if b.checkFirstText(["rpm","-qi","gtkglext-devel"], "Name"):
+      good = True
+  return good
+
+def autoPythonDevCheck():
+  """ Passed for 'auto' mode for the PYTHON flag """
+  # We are checking for python c++ development libraries
+  # on Redhat 7
+  good = False
+
+  # Test 1: We just check for python-devel. This will be the system
+  # version of python.  We'll have work to do if we want to handle a
+  # custom python install
+  if b.checkFirstText(["rpm","-qi","python-devel"], "Name"):
+    good = True
+  return good
+
 class buildW2(Builder):
   """ Build W2 library """
   def build(self, target):
@@ -47,6 +71,7 @@ class buildW2tools(Builder):
   """ Build W2tools library """
   def __init__(self, key):
     self.myWantGUI = True
+    self.myWantPythonDev = False
     # New stylesuper(buildW2tools, self).__init__(key)
     Builder.__init__(self, key)
 
@@ -59,6 +84,10 @@ class buildW2tools(Builder):
       add = " --with-gtk=yes"
     else:
       add = " --with-gtk=no"
+    if self.myWantPythonDev:
+      add = " --with-pythondev=yes"
+    else:
+      add = " --with-pythondev=no"
     #b.run("./autogen.sh --prefix="+target+" --enable-shared "+add)
     r = self.autogen("./autogen.sh", target)
     r = r + add
@@ -67,7 +96,11 @@ class buildW2tools(Builder):
   def checkRequirements(self):
     req = True
     if self.myWantGUI:
-      req = req & b.checkRPM("gtkglext-devel")
+      req = req & autoGUICheck()
+      #req = req & b.checkRPM("gtkglext-devel")
+    if self.myWantPythonDev:
+      #req = req & b.checkRPM("python-devel")
+      req = req & autoPythonDevCheck()
     return req
 
 class MRMSSevereBuild(BuilderGroup):

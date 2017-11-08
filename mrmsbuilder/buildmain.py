@@ -18,6 +18,8 @@ from . import config as config
 # You'd add a module here if needed
 from .ThirdParty import ThirdPartyBuild
 from .MRMSSevere import MRMSSevereBuild
+from .MRMSSevere import autoGUICheck as autoGUICheck
+from .MRMSSevere import autoPythonDevCheck as autoPythonDevCheck
 from .MRMSHydro import MRMSHydroBuild
 
 red = "\033[1;31m"
@@ -30,37 +32,8 @@ MINOR_VERSION = 1
 
 line = "------------------------------------------------"
 
-PGUIBUILD = "Fresh checkout/build full Severe/Hydro package with "+red+"GUI"+coff
-PALGBUILD = "Fresh checkout/build full Severe/Hydro package "+red+"without GUI"+coff
-
-def getWhatAdvanced1():
-  """ Get what user wants, using keys and prompts.  They will be numbered """
-  myPrompts = ["guibuild", PGUIBUILD,
-               "algbuild", PALGBUILD,
-               "over3rdbuild", "Checkout/Build on top of existing third party",
-               "build3rd", "Build third party only.", 
-               "checkout", "Checkout only.",
-               "rebuild", "Rebuild previous folder checked out with MRMS builder."]
-            
-  o = b.pickSmarter("What do you "+red+"want"+coff+" to do?", myPrompts, "guibuild", True, False)
-  print("You choose option: " +o)
-  return o
-  
-def getWhat():
-  """ Get what user wants """
-  myPrompts = ["guibuild", PGUIBUILD, 
-               "algbuild", PALGBUILD, 
-               "advanced", "Advanced Options"]
-  o = b.pickSmarter("What do you "+red+"want"+coff+" to do?", myPrompts, "guibuild", True, False)
-  print("You choose option: " +o)
-  if o == "advanced":
-    o = getWhatAdvanced1()
-  return o
-
-def getBuildFolder():
-  """ Get the build folder """
-  #global date
-
+def getTargetPaths():
+  """ Return list of default paths for install """
   # Get Timestamp
   today = datetime.date.today()
   date = today.strftime("%Y%m%d")
@@ -80,6 +53,36 @@ def getBuildFolder():
   homePath = expanduser("~")+"/"+"MRMS"
   homePathDate = homePath+"_"+date
 
+  return[homePathDate, homePath, relativePathDate, relativePath]
+  
+def validatePath(aPath):
+  """ Return true if path writable/changable """
+  good = True
+  # Try to create directory...
+  if not os.path.exists(aPath):
+    try:
+      os.makedirs(aPath)
+    except:
+      print("I couldn't create directory "+aPath)
+      good = False
+
+  # Try to access directory...
+  if not os.access(aPath, os.W_OK):
+    print("...but I can't _access_ "+aPath+". Permission settings?")
+    good = False
+
+  return good
+
+def getBuildFolder():
+  """ Get the build folder """
+  global theConf
+  o = theConf.getString("TARGET", "", "")
+  if o != "":
+    theConf.addHistory("TARGET", "Target location", o)
+    return o  
+
+  [homePathDate, homePath, relativePathDate, relativePath] = getTargetPaths()
+
   myPrompts = [
                "Use Home Dated: " + green+homePathDate+coff,
                "Use Home: " + green+homePath+coff,
@@ -87,11 +90,12 @@ def getBuildFolder():
                "Use Relative: " + green+relativePath+coff,
               ]
   myOptions = ["1", "2", "3", "4"]
+  mainPrompt = red+"Where"+coff+" would you like the build placed? (You can type a path as well)"
             
   while True:
     good = True
 
-    o = b.pickOption1(red+"Where"+coff+" would you like the build placed? (You can type a path as well)", myPrompts, myOptions, "1", False, True)
+    o = b.pickOption1(mainPrompt, myPrompts, myOptions, "1", False, True)
     print("You choose: " +o)
 
     # Get the path wanted
@@ -109,32 +113,11 @@ def getBuildFolder():
     elif (wanted == "4"):
       wanted = relativePath
 
-    # Try to create directory...
-    if not os.path.exists(wanted):
-      try:
-        os.makedirs(wanted)
-      except:
-        print("I couldn't create directory "+wanted)
-        good = False
+    good = validatePath(wanted)
 
-    # Try to access directory...
-    if not os.access(wanted, os.W_OK):
-      print("...but I can't _access_ "+wanted+". Permission settings?")
-      good = False
- 
     if good:
+      theConf.addHistory("TARGET", "Target location", wanted)
       return wanted
-
-def getPassword(user):
-  """ Get password for build """
-  global theConf
-  o = theConf.getString("PASSWORD", "", "")
-  if o == "":
-    print(line)
-    print("To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)")
-    o = getpass.getpass(green+user+" Password:"+coff)
-    print(green+"1.2.3.4 ... That's the password on my luggage.  Well if computers had luggage."+coff)
-  return o
 
 def addBuilder(aList, aBuilder, aBuildItFlag):
   """ Convenience function for adding builder """
@@ -172,12 +155,14 @@ def buildMRMS():
   buildThird = theConf.getBoolean("THIRDPARTY", "Build all third party packages?", "yes")
   buildWDSS2 = theConf.getBoolean("WDSS2", "Build WDSS2 packages?", "yes")
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
-  buildGUI = theConf.getBoolean("GUI", "Build the WG display gui (requires openGL libraries installed)?", "yes")
+  buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui (requires openGL libraries installed)?", "yes", autoGUICheck)
 
   isResearch = False
   isExport = False
+  buildPython = False
   if (buildWDSS2):  # These flags only matter for WDSS2 part (for now at least)
     isResearch = theConf.getBoolean("RESEARCH", "Is this a research build (no realtime, no encryption)", "no")
+    buildPython = theConf.getBooleanAuto("PYTHONDEV", "Build WDSS2 python development support?", "no", autoPythonDevCheck)
     if (isResearch):
       isExport = True # Research version automatically loses encryption
     else:
@@ -196,6 +181,8 @@ def buildMRMS():
   # Get all the "-D" cppflag options Lak spammed us with (see below)
   if buildWDSS2 == True:
     ourDFlags = theConf.getOurDFlags()
+    if buildPython:
+      ourDFlags["PYTHON_DEVEL"] = "2.7"
     if isExport:
       ourDFlags["EXPORT_VERSION"] = "" 
     #print("DEBUG:Ok OUR cppflags are:"+str(ourDFlags))
@@ -226,7 +213,8 @@ def buildMRMS():
     uprompt ="What "+red+"username"+coff+" for SVN?"
     user = theConf.getString("USERNAME", uprompt, getpass.getuser())
     b.setupSVN(user, False) # Change user now
-    password = getPassword(user)
+    passPrompt = "To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)"
+    password = theConf.getPassword("PASSWORD", passPrompt, user)
     print(blue+"Checking out code..."+coff)
     for bg in bl:
       bg.checkout(folder, password)
@@ -250,6 +238,7 @@ def buildMRMS():
        bg.setMakeFlags(makeFlags)
        bg.build(folder)
 
+  theConf.printHistory()
   b.setupSVN(user, True)
 
 if __name__ == "__main__":

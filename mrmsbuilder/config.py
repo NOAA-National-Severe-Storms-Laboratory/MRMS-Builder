@@ -6,7 +6,7 @@
 # configuration file
 
 # System imports
-import os,sys,readline,multiprocessing
+import getpass,os,sys,readline,multiprocessing
 from datetime import timedelta # Time for expire function
 from datetime import datetime
 
@@ -26,7 +26,7 @@ class Configuration:
   def __init__(self):
     self.map1 = {}
     self.map2 = {}
-    self.history = ""
+    self.history = {}
 
   def cleanText(self, line):
      """ Clean text line from config file """
@@ -66,9 +66,26 @@ class Configuration:
      self.map2 = self.readSplitFile(configFile, " ")
      return ""
 
+  def addHistory(self, key, prompt, value):
+    """ Add a line to the history """
+    self.history[key] = [prompt, value]
+     
   def printHistory(self):
     """ Print out history of options chosen """
-    print(self.history)
+    print(line)
+    print("Final settings:")
+    for l in self.history:
+      data = self.history[l]
+      prompt = data[0]
+      value = data[1]
+      if value == False:
+       value = red+str(value)+coff
+      else:
+       value = green+str(value)+coff
+      #print(l+" "+prompt +" --> "+value)
+      print(l+" --> "+value)
+      #print(l)
+    print(line)
 
   def printConfig(self):
     """ Print out configuration """
@@ -129,12 +146,7 @@ class Configuration:
        #v = self.promptString(prompt, default_value)
        v = self.promptFileDir(key, prompt, default_value)
 
-    self.history = self.history+prompt+" --> "
-    if v == True:
-     self.history += green
-    else:
-     self.history += red
-    self.history += str(v)+coff+"\n"
+    self.addHistory(key, prompt, v)
     return v
 
   def promptString(self, key, prompt, defOption):
@@ -165,17 +177,25 @@ class Configuration:
     else:
      ### Not in configureation file, so prompt for it...
      if prompt == "":
-       return default_value
+       #return default_value
+       v = default_value
      else:
        v = self.promptString(key, prompt, default_value)
 
-    self.history = self.history+prompt+" --> "
-    if v == True:
-     self.history += green
-    else:
-     self.history += red
-    self.history += str(v)+coff+"\n"
+    self.addHistory(key, prompt, v)
     return v
+
+  def getPassword(self, key, prompt, user):
+    """ Get a password string """
+    o = self.getString(key, "", "")
+    if o == "":
+      print(line)
+      print("To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)")
+      o = getpass.getpass(green+user+" Password:"+coff)
+      self.addHistory(key, prompt, "{User entered}")
+    else:
+      self.addHistory(key, prompt, "{From configuration}")
+    return o
 
   def promptBoolean(self, key, prompt, default_value):
     """ Prompt for a boolean value """
@@ -213,6 +233,10 @@ class Configuration:
       v = True
     elif s == "false":
       v = False
+    elif s == "y":
+      v = True
+    elif s == "n":
+      v = False
     else:
       ### Not in configuration file, so prompt for it...
       if prompt == "":
@@ -220,13 +244,20 @@ class Configuration:
       else:
         v = self.promptBoolean(key, prompt, default_option)
   
-    self.history = self.history+prompt+" --> "
-    if v == True:
-     self.history += green
-    else:
-     self.history += red
-    self.history += str(v)+coff+"\n"
+    self.addHistory(key, prompt, v)
     return v
+
+  def getBooleanAuto(self, key, prompt, default_option, checkRequirements):
+    """ Get a boolean value from configuration with a auto check function """
+    s = self.map1.get(key, "")
+    s = s.lower()
+    if s == "auto":
+      flag = checkRequirements()
+      self.addHistory(key, prompt+" (auto checking)", flag)
+      return flag
+    else:
+      return self.getBoolean(key, prompt, default_option)
+   
 
 ########################################################################
 # Non 'regular configuration' file stuff.  Could be a subclass...
@@ -236,6 +267,7 @@ class Configuration:
     o = self.getString("JOBS", "", "CPU")
     if ((o == "CPU") or (o == "")):
       o =str(multiprocessing.cpu_count())
+    self.addHistory("JOBS", "Number of make jobs for build?", o)
     return o
 
   def getOurDFlags(self):
