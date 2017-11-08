@@ -80,17 +80,23 @@ class buildW2tools(Builder):
   def build(self, target):
     w2tools = target+"/"+WDSS2+"/w2tools"
     b.chdir(w2tools)
-    if self.myWantGUI:
-      add = " --with-gtk=yes"
-    else:
-      add = " --with-gtk=no"
-    if self.myWantPythonDev:
-      add = " --with-pythondev=yes"
-    else:
-      add = " --with-pythondev=no"
     #b.run("./autogen.sh --prefix="+target+" --enable-shared "+add)
     r = self.autogen("./autogen.sh", target)
-    r = r + add
+
+    # Add gtk GUI flag if needed/wanted
+    r += " --with-gtk="
+    if self.myWantGUI:
+      r += "yes"
+    else:
+      r += "no"
+
+    # Add python flag if needed/wanted
+    r += " --with-pythondev="
+    if self.myWantPythonDev:
+      r += "yes"
+    else:
+      r += "no"
+
     b.run(r)
     self.makeInstall()
   def checkRequirements(self):

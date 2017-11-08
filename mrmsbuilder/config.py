@@ -273,6 +273,7 @@ class Configuration:
   def getOurDFlags(self):
     """ Get expire data from configuration file """
     # Current expire is only allowed D flag?
+    expireinfo = ""
     aMap = {}
     v = self.getString("EXPIRE", "", "")
     dateformat = "%Y-%m-%d" # 2017-Aug-18
@@ -286,11 +287,13 @@ class Configuration:
     #print("NOW is "+str(nowtime))
     #thestart = "-DWDSSII_SUNRISE="+nowtime.strftime("%s")
     aMap["WDSSII_SUNRISE"] = nowtime.strftime("%s")
+    expireinfo = "Sunrise="+nowtime.strftime("%Y-%m-%d")
     #final = thestart
 
     # Check for empty string, which means don't expire
     if good == False:
       if v == "":
+        self.addHistory("EXPIRE", "Expiration information", expireinfo)
         return aMap
         #return final # no expire time
 
@@ -322,6 +325,9 @@ class Configuration:
       #final +=  " -DWDSSII_SUNSET="+thentime.strftime("%s")
       #final +=  " -DWDSSII_SUNSET="+thentime.strftime("%s")
       aMap["WDSSII_SUNSET"] = thentime.strftime("%s")
+      expireinfo = "  Sunset="+thentime.strftime("%Y-%m-%d")
+
+    self.addHistory("EXPIRE", "Expiration information", expireinfo)
     return aMap  # Map of name to value
     #return final
 

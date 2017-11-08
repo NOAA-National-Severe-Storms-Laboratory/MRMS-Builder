@@ -5,7 +5,7 @@
 import sys
 
 print("Python version %s.%s.%s" % sys.version_info[:3])
-if sys.version_info >=(2,7):
+if sys.version_info >=(2,6):
   import mrmsbuilder.buildmain as buildmain
   buildmain.buildMRMS()
 else:
