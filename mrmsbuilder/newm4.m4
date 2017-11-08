@@ -51,7 +51,7 @@ AC_DEFUN([W2_WITH_PYTHONDEV],
                    no) pythondev=false;;
                    yes) pythondev=true;;
                    *) AC_MSG_ERROR([bad value ${withval} for --with-pythondev]);;
-                  esac],[pythondev=true])
+                  esac],[pythondev=false])
      AM_CONDITIONAL(COND_PYTHONDEV, test x$pythondev = xtrue)
      dnl if test x"${pythondev}" = xtrue ; then
      dnl   AC_DEFINE([WITH_PYTHONDEV], [], [w2 python development support])
