@@ -161,12 +161,18 @@ class buildG2CLIB(BuildThird):
     b.run("cp libg2c*a "+target+"/lib")
     b.run("cp *.h "+target+"/include")
 
+def netcdfCheck():
+  """ Check for netcdf stuff... """
+  good = True
+
+  
 class buildUDUNITS(BuildTar):
   """ Build udunits library """
   def checkRequirements(self):
-    # UDUNITS2 wants the expat-devel XML library
     req = True
-    req = req & b.checkRPM("expat-devel")
+    # Test 1: Check expat-devel XML library UDUNITS2 wants the expat-devel XML library
+    if not b.checkFirstText("UDUNITS",["rpm", "-qi", "expat-devel"], "Name"):
+      req = False
     return req
   def build(self, target):
     b.chdir(self.key)
@@ -221,6 +227,18 @@ class buildORPGINFR(BuildTar):
     self.makeInstall()
 
 class buildGDAL(BuildTar):
+  """ GDAL requirements """
+  def checkRequirements(self):
+    req = True
+    # Test 1: Check expat-devel XML library UDUNITS2 wants the expat-devel XML library
+    if not b.checkFirstText("GDAL",["rpm", "-qi", "libxml2-devel"], "Name"):
+      req = False
+
+    # Test 2: Check xml2-config from libxml2 is in the normal path location.
+    if not b.checkFirstText("GDAL",["which", "xml2-config"], "/usr/bin/xml2-config"):
+      print("    Note: custom LDM installs can add to PATH which conflicts with GDAL");
+      req = False
+    return req
   """ Build gdal library """
   def build(self, target):
     b.chdir(self.key)

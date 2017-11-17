@@ -43,7 +43,7 @@ def runRead(stuff):
     print ("Exception trying to execute command:" + str(e))
     return []
 
-def checkFirstText(stuff, text):
+def checkFirstText(label, stuff, text):
   """ Run a command, check for text in the first line of output """
   good = False
   lines = runRead(stuff)
@@ -51,23 +51,17 @@ def checkFirstText(stuff, text):
     s = lines[0]
     if text in s:
       good = True
+
+  # Print some error on fail to help debugging
+  if good == False:
+    string = ""
+    for z in stuff:
+      string = string+z+" "
+    red = "\033[1;31m"
+    coff = "\033[0m"
+    print(red+"   (Can't build '"+label+"': Ran '"+string+"' and looked for the text '"+text+"' and didn't find it...)"+coff)
+    
   return good
-
-def checkRPM(prefix):
-  """ Check existance of a RPM by prefix """
-  lines = runRead(["rpm", "-qi", prefix])
-  result = len(lines)
-
-  # Ok, a length > 1 means info probably worked..(the information)
-  if (result > 1):
-    #print("Required RPM found: " +prefix)
-    return True
-
-  # Otherwise:
-  # A '1' length is probably the 'package not installed' message...
-  # or zero...some error
-  print("Required RPM NOT found: " +prefix)
-  return False
 
 def runOptional(stuff):
   """ Run system command, allow failure  """
