@@ -29,8 +29,8 @@ class MRMSHydroBuild(BuilderGroup):
     l.append(buildHydro("hydro"))
     self.myBuilders = l
 
-  def checkout(self, target, password):
-    b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password)
+  def checkout(self, target, password, options):
+    b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password, options)
 
   def build(self, target):
     """ Build HYDRO (MRMS_Hydro) """

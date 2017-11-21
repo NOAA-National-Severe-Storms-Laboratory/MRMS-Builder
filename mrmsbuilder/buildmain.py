@@ -215,9 +215,11 @@ def buildMRMS():
     b.setupSVN(user, False) # Change user now
     passPrompt = "To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)"
     password = theConf.getPassword("PASSWORD", passPrompt, user)
+    revision = theConf.getString("REVISION", "What SVN --revision so you want?", "HEAD")
+    revision = "-r "+revision
     print(blue+"Checking out code..."+coff)
     for bg in bl:
-      bg.checkout(folder, password)
+      bg.checkout(folder, password, revision)
     print(blue+"Check out success."+coff)
 
   w2cppflags = ""

@@ -115,7 +115,7 @@ class BuilderGroup:
     for build in self.myBuilders:
        req = req & build.checkRequirements()
     return req
-  def checkout(self, target, password):
+  def checkout(self, target, password, svnoptions):
     pass
   def build(self, target):
     pass

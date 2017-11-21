@@ -123,8 +123,8 @@ class MRMSSevereBuild(BuilderGroup):
     l.append(self.myW2Tools)
     self.myBuilders = l
 
-  def checkout(self, target, password):
-    b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password)
+  def checkout(self, target, password, options):
+    b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password, options)
 
   def build(self, target):
     """ Build WDSS2 (MRMS_Severe) """

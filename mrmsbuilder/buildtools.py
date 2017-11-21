@@ -304,17 +304,20 @@ def checkoutSingle(child, command, password):
       #print("We got EOF!\n")
       return
 
-def checkoutSVN(what,where, password):
+def checkoutSVN(what,where, password, options):
   """ Checkout a single SVN repository """
 
   global SVNROOT
   if sys.version_info <(3,0):
     whatfull = unicode(SVNROOT+what, "utf-8")
     wherefull = unicode(where, "utf-8")
+    svnoptions = unicode(options, "utf-8")
   else:
     whatfull = SVNROOT+what
     wherefull = where
-  command = (u"svn co "+whatfull+u" "+wherefull)
+    svnoptions = options
+  #command = (u"svn co "+whatfull+u" "+wherefull)
+  command = (u"svn co "+svnoptions+" "+whatfull+u" "+wherefull)
   child = pexpect.spawnu(command)
 
   # This is nice for debugging, but it will print your password 

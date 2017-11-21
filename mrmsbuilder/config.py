@@ -53,7 +53,8 @@ class Configuration:
              map1[pair[0]] = pair[1]
      except Exception as e:  # python 2.7 up
        error = "Couldn't read file "+configFile+"\nReason:"+str(e)
-       return error
+       print(error)
+       sys.exit()
      return map1
  
   def readConfig(self, configFile):
