@@ -6,6 +6,7 @@
 # Here be the settings.  Change if needed:
 SVNMACHINE = "vmrms-ark.protect.nssl"
 SVNPATH ="/localdata/svn"
+SVNWEBPATH = "http://"+SVNMACHINE+":18080/svn"
 
 # System imports
 import os,sys
@@ -215,14 +216,18 @@ def setupSVN(user, printit):
   """ Setup the SVN settings """
   global SVNMACHINE
   global SVNPATH
+  global SVNWEBPATH
 
   # I'm just gonna set the things
   global SVNROOT 
   global SVN_RSH
 
   if user == ".":
-    SVN_RSH = "svn+ssh"
-    SVNROOT = "svn+ssh://"+SVNMACHINE+SVNPATH
+    # This assumes the current user and asks for their password..bleh
+    #SVN_RSH = "svn+ssh"
+    #SVNROOT = "svn+ssh://"+SVNMACHINE+SVNPATH
+    SVN_RSH = ""
+    SVNROOT = SVNWEBPATH
   else:
     SVN_RSH = "svn+ssh"
     SVNROOT = "svn+ssh://"+user+"@"+SVNMACHINE+SVNPATH
