@@ -220,15 +220,22 @@ def setupSVN(user, printit):
   global SVNROOT 
   global SVN_RSH
 
-  SVN_RSH = "svn+ssh"
-  SVNROOT = "svn+ssh://"+user+"@"+SVNMACHINE+SVNPATH
+  if user == ".":
+    SVN_RSH = "svn+ssh"
+    SVNROOT = "svn+ssh://"+SVNMACHINE+SVNPATH
+  else:
+    SVN_RSH = "svn+ssh"
+    SVNROOT = "svn+ssh://"+user+"@"+SVNMACHINE+SVNPATH
   os.environ["SVNROOT"] = SVNROOT
   os.environ["SVN_RSH"] = SVN_RSH
 
   if printit:
-    print(blue+"Validate this in your shell settings if you plan to change code:"+coff)
-    print("SVN_RSH = \""+SVN_RSH+"\"")
-    print("SVNROOT = \""+SVNROOT+"\"")
+    if user == ".":
+      print(blue+"Anonymous checkout and build for read only complete."+coff)
+    else:
+      print(blue+"Validate this in your shell settings if you plan to change code:"+coff)
+      print("SVN_RSH = \""+SVN_RSH+"\"")
+      print("SVNROOT = \""+SVNROOT+"\"")
 
 def checkoutSingle(child, command, password):
   """ Checkout a single SVN repository with password """

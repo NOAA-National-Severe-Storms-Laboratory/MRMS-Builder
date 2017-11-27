@@ -210,11 +210,14 @@ def buildMRMS():
   # User/password for SVN and checkout
   if checkout:
     #user = getUserName() user = getpass.getuser()
-    uprompt ="What "+red+"username"+coff+" for SVN?"
+    uprompt ="What "+red+"username"+coff+" for SVN? (Use . for anonymous checkout if you aren't going to commit code.)"
     user = theConf.getString("USERNAME", uprompt, getpass.getuser())
     b.setupSVN(user, False) # Change user now
-    passPrompt = "To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)"
-    password = theConf.getPassword("PASSWORD", passPrompt, user)
+    if user == ".":
+      password = "" # anonymous shouldn't ask for password
+    else:
+      passPrompt = "To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)"
+      password = theConf.getPassword("PASSWORD", passPrompt, user)
     revision = theConf.getString("REVISION", "What SVN --revision so you want?", "HEAD")
     revision = "-r "+revision
     print(blue+"Checking out code..."+coff)
