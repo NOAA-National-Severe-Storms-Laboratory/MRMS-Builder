@@ -235,10 +235,17 @@ class buildGDAL(BuildTar):
       req = False
 
     # Test 2: Check xml2-config from libxml2 is in the normal path location.
-    if not b.checkFirstText("GDAL",["which", "xml2-config"], "/usr/bin/xml2-config"):
+    # On redhat 7 libxml2 sticks it in /bin/ as well...bleh make up mind people.
+    # Probably should do a rpm list on libxml2 and compare that way to be 100% sure
+    good = b.checkFirst("GDAL",["which", "xml2-config"], "/usr/bin/xml2-config")
+    good |= b.checkFirst("GDAL",["which", "xml2-config"], "/bin/xml2-config")
+
+    if not good:
+      b.checkError("GDAL", ["which", "xml2-config"], "/usr/bin/xml2-config or /bin/xml2-config");
       print("    Note: custom LDM installs can add to PATH which conflicts with GDAL");
       req = False
     return req
+
   """ Build gdal library """
   def build(self, target):
     b.chdir(self.key)

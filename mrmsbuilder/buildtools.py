@@ -44,7 +44,16 @@ def runRead(stuff):
     print ("Exception trying to execute command:" + str(e))
     return []
 
-def checkFirstText(label, stuff, text):
+def checkError(label, stuff, text):
+  """ Print error from first line of running a command """
+  string = ""
+  for z in stuff:
+    string = string+z+" "
+  red = "\033[1;31m"
+  coff = "\033[0m"
+  print(red+"   (Can't build '"+label+"': Ran '"+string+"' and looked for the text '"+text+"' and didn't find it...)"+coff)
+  
+def checkFirst(label, stuff, text):
   """ Run a command, check for text in the first line of output """
   good = False
   lines = runRead(stuff)
@@ -52,16 +61,15 @@ def checkFirstText(label, stuff, text):
     s = lines[0]
     if text in s:
       good = True
+  return good
+
+def checkFirstText(label, stuff, text):
+  """ Run a command, check for text in the first line of output, dump error automatically """
+  good = checkFirst(label, stuff, text)
 
   # Print some error on fail to help debugging
   if good == False:
-    string = ""
-    for z in stuff:
-      string = string+z+" "
-    red = "\033[1;31m"
-    coff = "\033[0m"
-    print(red+"   (Can't build '"+label+"': Ran '"+string+"' and looked for the text '"+text+"' and didn't find it...)"+coff)
-    
+    checkError(label, stuff, text)
   return good
 
 def runOptional(stuff):
