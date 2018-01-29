@@ -21,6 +21,8 @@ from .MRMSSevere import MRMSSevereBuild
 from .MRMSSevere import autoGUICheck as autoGUICheck
 from .MRMSSevere import autoPythonDevCheck as autoPythonDevCheck
 from .MRMSHydro import MRMSHydroBuild
+from .WG2 import WG2Build
+from .WG2 import autoGUI2Check as autoGUI2Check
 
 red = "\033[1;31m"
 blue = "\033[1;34m"
@@ -155,7 +157,8 @@ def buildMRMS():
   buildThird = theConf.getBoolean("THIRDPARTY", "Build all third party packages?", "yes")
   buildWDSS2 = theConf.getBoolean("WDSS2", "Build WDSS2 packages?", "yes")
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
-  buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui (requires openGL libraries installed)?", "yes", autoGUICheck)
+  buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui? (requires openGL libraries installed)", "yes", autoGUICheck)
+  buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
 
   isResearch = False
   isExport = False
@@ -175,6 +178,7 @@ def buildMRMS():
   mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2)
   mrmssevere.setWantGUI(buildGUI)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(), buildHydro)
+  wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
 
   ###################################################
   # Try to do stuff that could 'break' if misconfigured here before checking out...
@@ -242,6 +246,24 @@ def buildMRMS():
        # All using same make flags for now at least
        bg.setMakeFlags(makeFlags)
        bg.build(folder)
+
+  # Calculate stuff for version 
+  dateraw = datetime.datetime.now();
+  mydate = dateraw.strftime("%Y-%m-%d-%H-%M-%S-%f")
+  machine = os.uname()[4]
+  redhat = b.getFirst(["cat","/etc/redhat-release"])
+  envuser = getpass.getuser()
+
+  # Dump VERSION file to bin
+  aFile = open(folder+"/bin/VERSION", "w")
+  aFile.write("MRMS build completed on "+mydate+"\n")
+  aFile.write("Redhat info: "+redhat+"\n")
+  aFile.write("Run by user: "+envuser+"\n")
+  aFile.write("Run on machine: "+machine+"\n")
+  aFile.write("Options:\n")
+  theConf.printFileHistory(aFile)
+  aFile.close()
+  b.runOptional("cp "+folder+"/bin/VERSION "+folder+"/lib/VERSION")
 
   theConf.printHistory()
   b.setupSVN(user, True)

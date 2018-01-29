@@ -88,6 +88,19 @@ class Configuration:
       #print(l)
     print(line)
 
+  def printFileHistory(self, f):
+    """ Print out history of options chosen """
+    for l in self.history:
+      data = self.history[l]
+      prompt = data[0]
+      value = data[1]
+      if value == False:
+       value = str(value)
+      else:
+       value = str(value)
+      f.write(l+" --> "+value+"\n")
+  
+
   def printConfig(self):
     """ Print out configuration """
     print (self.map1)

@@ -51,16 +51,32 @@ def checkError(label, stuff, text):
     string = string+z+" "
   red = "\033[1;31m"
   coff = "\033[0m"
-  print(red+"   (Can't build '"+label+"': Ran '"+string+"' and looked for the text '"+text+"' and didn't find it...)"+coff)
+  print(red+"   (Can't build '"+label+"': Ran '"+string+"' and looked for the text '"+text+"' and didn't find it...)"+coff+"\n")
   
-def checkFirst(label, stuff, text):
-  """ Run a command, check for text in the first line of output """
-  good = False
+def getFirst(stuff):
+  s = ""
   lines = runRead(stuff)
   if len(lines) > 0:
     s = lines[0]
-    if text in s:
-      good = True
+  return s
+
+def checkFirstList(label, stuff, aList):
+  """ Run a command, check for text in the first line of output """
+  s = getFirst(stuff)
+  for t in aList:
+   if t in s:
+    return True
+  return False
+
+def checkFirst(label, stuff, text):
+  """ Run a command, check for text in the first line of output """
+  good = False
+  s = getFirst(stuff)
+  #lines = runRead(stuff)
+  #if len(lines) > 0:
+  #  s = lines[0]
+  if text in s:
+    good = True
   return good
 
 def checkFirstText(label, stuff, text):
