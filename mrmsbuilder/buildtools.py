@@ -11,11 +11,11 @@ SVNWEBPATH = "http://"+SVNMACHINE+":18080/svn"
 # System imports
 import os,sys
 import subprocess
-import pexpect
 import readline
 
 # Relative imports
 from . import filecompleter
+from . import pexpect
 
 red = "\033[1;31m"
 blue = "\033[1;34m"

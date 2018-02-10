@@ -11,7 +11,7 @@ from . import buildtools as b
 from .builder import Builder
 from .builder import BuilderGroup
 from .ThirdParty import THIRD
-import wget.wget as wget
+from . import wget
 
 def autoGUI2Check():
   """ Passed for 'auto' mode for the GUI flag """
