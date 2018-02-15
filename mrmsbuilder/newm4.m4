@@ -35,7 +35,7 @@ AC_DEFUN([W2_WITH_WX],
 )
 AC_DEFUN([W2_WITH_GTK],
     [AC_ARG_WITH([gtk],
-                 [AC_HELP_STRING([--with-gtk],[build Gtk+ GUI apps (default=yes)])],
+                 [AC_HELP_STRING([--with-gtk],[build Gtk+ GUI apps (default=no)])],
                  [case "${withval}" in
                    no) gtk=false;;
                    yes) gtk=true;;
@@ -1001,7 +1001,7 @@ AC_DEFUN([W2_CONFIGURE_W2],[
 
   #### Configure only stuff needed for W2 directory
   W2_CONFIGURE_SHARED
-  CHECK_GTK
+
   W2_WITH_RSSD
   W2_ENABLE_NEXRAD
   W2_ENABLE_ORPG
@@ -1012,10 +1012,11 @@ AC_DEFUN([W2_CONFIGURE_W2EXT],[
 
   #### Configure only stuff needed for W2EXT directory
   W2_CONFIGURE_SHARED
-    W2_ENABLE_HIRES
-    W2_ENABLE_WISH
-    W2_ENABLE_NEXRAD
-    W2_ENABLE_ORPG
+
+  W2_ENABLE_HIRES
+  W2_ENABLE_WISH
+  W2_ENABLE_NEXRAD
+  W2_ENABLE_ORPG
 ])
 
 
