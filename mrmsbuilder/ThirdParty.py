@@ -147,6 +147,9 @@ class buildG2CLIB(BuildThird):
     b.run("tar xvf "+self.key+".tar")
   def build(self, target):
     b.chdir(self.key)
+    # make sure we link to jasper here correctly
+    os.environ["CPPFLAGS"] = self.localInclude(target)
+    os.environ["LDFLAGS"] = self.localLink(target)+" -ljasper "
     # Brain dead g2lib doesn't have a configure.  Seriously?
     # Move the original makefile and make a new one using it...
     b.run("mv makefile makefileBASE")
@@ -160,6 +163,8 @@ class buildG2CLIB(BuildThird):
     b.run("make")
     b.run("cp libg2c*a "+target+"/lib")
     b.run("cp *.h "+target+"/include")
+    os.environ["CPPFLAGS"] = ""
+    os.environ["LDFLAGS"] = ""
 
 def netcdfCheck():
   """ Check for netcdf stuff... """
@@ -230,20 +235,24 @@ class buildGDAL(BuildTar):
   """ GDAL requirements """
   def checkRequirements(self):
     req = True
+    #
+    # FIXME JWB - I don't think we need this. Keep until verified.
+    # FIXME JWB - far as I can tell, the xml2 stuff is not used.
+    #
     # Test 1: Check expat-devel XML library UDUNITS2 wants the expat-devel XML library
-    if not b.checkFirstText("GDAL",["rpm", "-qi", "libxml2-devel"], "Name"):
-      req = False
+    #if not b.checkFirstText("GDAL",["rpm", "-qi", "libxml2-devel"], "Name"):
+    #  req = False
 
     # Test 2: Check xml2-config from libxml2 is in the normal path location.
     # On redhat 7 libxml2 sticks it in /bin/ as well...bleh make up mind people.
     # Probably should do a rpm list on libxml2 and compare that way to be 100% sure
-    good = b.checkFirst("GDAL",["which", "xml2-config"], "/usr/bin/xml2-config")
-    good |= b.checkFirst("GDAL",["which", "xml2-config"], "/bin/xml2-config")
+    #good = b.checkFirst("GDAL",["which", "xml2-config"], "/usr/bin/xml2-config")
+    #good |= b.checkFirst("GDAL",["which", "xml2-config"], "/bin/xml2-config")
 
-    if not good:
-      b.checkError("GDAL", ["which", "xml2-config"], "/usr/bin/xml2-config or /bin/xml2-config");
-      print("    Note: custom LDM installs can add to PATH which conflicts with GDAL");
-      req = False
+    #if not good:
+    #  b.checkError("GDAL", ["which", "xml2-config"], "/usr/bin/xml2-config or /bin/xml2-config");
+    #  print("    Note: custom LDM installs can add to PATH which conflicts with GDAL");
+    #  req = False
     return req
 
   """ Build gdal library """
@@ -259,6 +268,7 @@ class buildGDAL(BuildTar):
     r = r + " --with-hdf5="+target        # Use built one
     r = r + " --with-netcdf="+target      # Use built one
     r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
+    r = r + " --without-xml2"             # avoid conflicts - we don't need it
     r = r + " --with-sqlite3=no"          # Disable snagging it 
     b.run(r)
     self.makeInstall()
@@ -331,8 +341,8 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildORPGINFR("orpginfr-3.0.1"))
 
     # Finally Krause code we use
-    l.append(buildDualpol("dualpol-04182017"))
-    l.append(buildDualpolQPE("dualpol-QPE-04182017"))
+    l.append(buildDualpol("dualpol-08152017"))
+    l.append(buildDualpolQPE("dualpol-QPE-09122017"))
 
     # MRMSHydro to MRMSSevere datatype linking library
     l.append(buildHMRGW2("hmrgw2_lib-05102017"))

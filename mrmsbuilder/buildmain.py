@@ -178,7 +178,9 @@ def buildMRMS():
   mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2)
   mrmssevere.setWantGUI(buildGUI)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(), buildHydro)
-  wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
+  # Only add the wg2builder if the user has requested to build WG2
+  if buildGUI2:
+    wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
 
   ###################################################
   # Try to do stuff that could 'break' if misconfigured here before checking out...
@@ -250,20 +252,28 @@ def buildMRMS():
   # Calculate stuff for version 
   dateraw = datetime.datetime.now();
   mydate = dateraw.strftime("%Y-%m-%d-%H-%M-%S-%f")
-  machine = os.uname()[4]
+  machine = os.uname()
   redhat = b.getFirst(["cat","/etc/redhat-release"])
   envuser = getpass.getuser()
 
   # Dump VERSION file to bin
-  aFile = open(folder+"/bin/VERSION", "w")
-  aFile.write("MRMS build completed on "+mydate+"\n")
-  aFile.write("Redhat info: "+redhat+"\n")
-  aFile.write("Run by user: "+envuser+"\n")
-  aFile.write("Run on machine: "+machine+"\n")
-  aFile.write("Options:\n")
-  theConf.printFileHistory(aFile)
-  aFile.close()
-  b.runOptional("cp "+folder+"/bin/VERSION "+folder+"/lib/VERSION")
+  good = validatePath(folder+"/bin/") # make sure directory exists.
+  if good:
+    aFile = open(folder+"/bin/VERSION", "w")
+    aFile.write("MRMS built using the MRMS_builder python scripts.\n")
+    aFile.write("\tDate completed: "+mydate+"\n")
+    aFile.write("\tRun by user: "+envuser+"\n")
+    aFile.write("\tRun on machine:\n\t  ")
+    for x in machine:
+      aFile.write(x+" ")
+    aFile.write("\n")
+    aFile.write("\tRedhat info:\n\t  "+redhat+"\n")
+    aFile.write("Options:\n")
+    theConf.printFileHistory(aFile)
+    aFile.close()
+    good = validatePath(folder+"/lib/") # make sure directory exists.
+    if good:
+      b.runOptional("cp "+folder+"/bin/VERSION "+folder+"/lib/VERSION")
 
   theConf.printHistory()
   b.setupSVN(user, True)

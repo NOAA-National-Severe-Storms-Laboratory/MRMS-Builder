@@ -81,6 +81,7 @@ class buildW2tools(Builder):
 
   def setWantGUI(self, flag):
     self.myWantGUI = flag
+
   def build(self, target):
     w2tools = target+"/"+WDSS2+"/w2tools"
     b.chdir(w2tools)
