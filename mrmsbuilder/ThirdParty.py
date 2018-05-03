@@ -326,7 +326,8 @@ class ThirdPartyBuild(BuilderGroup):
 
     # Netcdf libraries
     l.append(buildHDF5("hdf5-1.8.12"))
-    l.append(buildNETCDF("netcdf-4.3.3.1"))
+    #l.append(buildNETCDF("netcdf-4.3.3.1"))
+    l.append(buildNETCDF("netcdf-c-4.6.1"))
     l.append(buildNETCDFPLUS("netcdf-cxx-4.2"))
 
     # Grib2 tools (Requires: projection, netcdf, jasper and g2clib)
