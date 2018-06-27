@@ -188,12 +188,38 @@ class buildUDUNITS(BuildTar):
     self.makeInstall()
 
 class buildHDF5(BuildTar):
+  """ Kill HDF5 warnings hack """
+  def HDF5KillWarnings(self):
+    # Hack: hdf5 has a crazy amount of warnings.  Sure it's good to turn it all on, but only
+    # if your coders actually fix it.  We don't care about warnings with third party, out of
+    # our control..so turn them all off.
+    # FIXME: Is there an easier way to turn this off..hdf5 has some confusing scripts for configuring.
+
+    replaceIt = "-Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Winline -Wfloat-equal -Wmissing-format-attribute -Wmissing-noreturn -Wpacked -Wdisabled-optimization -Wformat=2 -Wunreachable-code -Wendif-labels -Wdeclaration-after-statement -Wold-style-definition -Winvalid-pch -Wvariadic-macros -Winit-self -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wunused-macros -Wunsafe-loop-optimizations -Wc++-compat -Wstrict-overflow -Wlogical-op -Wlarger-than=2048 -Wvla -Wsync-nand -Wframe-larger-than=16384 -Wpacked-bitfield-compat -Wstrict-overflow=5 -Wjump-misses-init -Wunsuffixed-float-constants -Wdouble-promotion -Wsuggest-attribute=const -Wtrampolines -Wstack-usage=8192 -Wvector-operation-performance -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format"
+    #r = "sed -i 's/"+replaceIt+"/-w/' Makefile" 
+    rbase = "sed -i 's/"+replaceIt+"/-w/' " 
+
+    # Find each Makefile from top of tree..
+    base = os.getcwd()
+    matches = []
+    for root, dirnames, filenames in os.walk(base):
+      for filename in filenames:
+        if filename.endswith("Makefile"):
+          matches.append(os.path.join(root, filename))
+
+    # Replace massive g++ warning string in every makefile
+    # Note: Maybe we can replace it before makefile
+    for i in matches:
+      r = rbase+i
+      b.run(r)
+    
   """ Build HDF5 library """
   def build(self, target):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     r = r + " --bindir="+target+"/bin/HDF5"
     b.run(r)
+    self.HDF5KillWarnings()
     self.makeInstall()
 
 class buildNETCDF(BuildTar):
@@ -206,6 +232,9 @@ class buildNETCDF(BuildTar):
     """ Make sure the base netcdf library has netcdf4 support built in. """
     r = r + " --enable-netcdf-4"
     b.run(r)
+    # Hack: Turn off --jobs flags for netcdf build..it currently has a race condition
+    # in it's build (bug in 4.6.1 at least).  Downside is we build slower
+    self.setMakeFlags("")
     self.makeInstall()
     # If we put NETCDF into own folder, put a link to ncdump in bin
     #b.runOptional("ln -s "+t+"/NETCDF/ncdump "+t+"/bin/ncdump")

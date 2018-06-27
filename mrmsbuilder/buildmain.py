@@ -57,6 +57,30 @@ def getTargetPaths():
 
   return[homePathDate, homePath, relativePathDate, relativePath]
   
+def validateAvailablePath(aPath):
+  """ Return true if path writable/changable and doesn't exist """
+  good = True
+  if os.path.exists(aPath):
+    print("\n")
+    print("Folder already exists, maybe a old or failed build.")
+    print("Path: " +aPath)
+    print("For build safety I won't build over it. Remove it and rerun script or change folder name.")
+    print("\n")
+    good = False
+  else:
+    try:
+      os.makedirs(aPath)
+    except:
+      print("I couldn't create directory "+aPath)
+      good = False
+
+    # Try to access directory...
+    if not os.access(aPath, os.W_OK):
+      print("...but I can't _access_ "+aPath+". Permission settings?")
+      good = False
+
+  return good
+
 def validatePath(aPath):
   """ Return true if path writable/changable """
   good = True
@@ -115,7 +139,7 @@ def getBuildFolder():
     elif (wanted == "4"):
       wanted = relativePath
 
-    good = validatePath(wanted)
+    good = validateAvailablePath(wanted)
 
     if good:
       theConf.addHistory("TARGET", "Target location", wanted)
