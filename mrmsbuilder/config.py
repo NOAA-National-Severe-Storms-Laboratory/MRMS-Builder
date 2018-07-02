@@ -27,6 +27,7 @@ class Configuration:
     self.map1 = {}
     self.map2 = {}
     self.history = {}
+    self.firstJobCheck = True
 
   def cleanText(self, line):
      """ Clean text line from config file """
@@ -278,10 +279,14 @@ class Configuration:
 
   def getJobs(self):
     """ Get job flag for all makes """
-    o = self.getString("JOBS", "", "CPU")
-    if ((o == "CPU") or (o == "")):
-      o =str(multiprocessing.cpu_count())
-    self.addHistory("JOBS", "Number of make jobs for build?", o)
+    if (self.firstJobCheck):
+      o = self.getString("JOBS", "", "CPU")
+      if ((o == "CPU") or (o == "")):
+        o =str(multiprocessing.cpu_count())
+      self.addHistory("JOBS", "Number of make jobs for build?", o)
+      self.jobs = o
+    else:
+      o = self.jobs
     return o
 
   def getOurDFlags(self):

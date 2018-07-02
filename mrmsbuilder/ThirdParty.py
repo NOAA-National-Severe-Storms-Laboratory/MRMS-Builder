@@ -120,7 +120,7 @@ class buildJASPER(BuildZip):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     r = r + " --bindir="+target+"/bin/JASPER"
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildLIBPNG(BuildTar):
@@ -128,7 +128,7 @@ class buildLIBPNG(BuildTar):
   def build(self, target):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildHMRGW2(BuildTar):
@@ -136,7 +136,7 @@ class buildHMRGW2(BuildTar):
   def build(self, target):
     b.chdir(self.key)
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildG2CLIB(BuildThird):
@@ -184,7 +184,7 @@ class buildUDUNITS(BuildTar):
     r = self.autogen("./configure", target)
     # Only one binary in here, lol
     #r = r + " --bindir="+t+"/bin/UDUNITS"
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildHDF5(BuildTar):
@@ -218,7 +218,7 @@ class buildHDF5(BuildTar):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     r = r + " --bindir="+target+"/bin/HDF5"
-    b.run(r)
+    self.runBuildSetup(r)
     self.HDF5KillWarnings()
     self.makeInstall()
 
@@ -231,7 +231,7 @@ class buildNETCDF(BuildTar):
     #r = r + " --bindir="+t+"/bin/NETCDF"  # See below too
     """ Make sure the base netcdf library has netcdf4 support built in. """
     r = r + " --enable-netcdf-4"
-    b.run(r)
+    self.runBuildSetup(r)
     # Hack: Turn off --jobs flags for netcdf build..it currently has a race condition
     # in it's build (bug in 4.6.1 at least).  Downside is we build slower
     self.setMakeFlags("")
@@ -248,7 +248,7 @@ class buildNETCDFPLUS(BuildTar):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     #r = r + " --bindir="+t+"/bin/NETCDF"
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildORPGINFR(BuildTar):
@@ -256,7 +256,7 @@ class buildORPGINFR(BuildTar):
   def build(self, target):
     b.chdir(self.key)
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     b.run("chmod a+x ./LinkLib008")
     self.makeInstall()
 
@@ -299,7 +299,7 @@ class buildGDAL(BuildTar):
     r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
     r = r + " --without-xml2"             # avoid conflicts - we don't need it
     r = r + " --with-sqlite3=no"          # Disable snagging it 
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
     # M4 has to find gdal-config...
     # The 'test' does GDAL_CFLAGS and GDAL_LIBS from bin/gdal-config.  Wondering if we should do it here
@@ -311,7 +311,7 @@ class buildDualpol(BuildTar):
   def build(self, target):
     b.chdir(self.key)
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildDualpolRRDD(BuildTar):
@@ -320,7 +320,7 @@ class buildDualpolRRDD(BuildTar):
     b.chdir(self.key)
     pathDualpol(target)
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildDualpolQPE(BuildTar):
@@ -329,7 +329,7 @@ class buildDualpolQPE(BuildTar):
     b.chdir(self.key)
     pathDualpol(target)
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class ThirdPartyBuild(BuilderGroup):
@@ -382,25 +382,42 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildGDAL("gdal-2.1.3"))
     self.myBuilders = l
 
+  def checkout(self, target, scriptroot, password, options):
+    """ Checkout for third consists of copying from builder to final """
+    base = os.getcwd()
+
+    # Input directory is our builder's third subfolder...
+    ibase = scriptroot+"/third"
+    b.chdir(ibase)
+
+    # Output directory for uncompress is THIRD within the checkout location
+    tbase = target+"/"+THIRD 
+    b.runOptional("mkdir -p "+tbase)
+    for build in self.myBuilders:
+      build.copy(tbase)
+
+    b.chdir(base)
+
   def build(self, target):
     """ Build third party used by all packages """
 
     print("Building third party libraries: " +target) 
 
     # Script base and source within it
-    base = os.getcwd()
-    b.chdir(base+"/third")
+#    base = os.getcwd()
+#    b.chdir(base+"/third")
 
     # Third code build base
     #tbase = target+"/src/thirdb/" 
-    tbase = target+"/"+THIRD 
-    b.runOptional("mkdir -p "+tbase)
+#    tbase = target+"/"+THIRD 
+#    b.runOptional("mkdir -p "+tbase)
 
     # Copy all builders...
-    for build in self.myBuilders:
-      build.copy(tbase)
+#    for build in self.myBuilders:
+#      build.copy(tbase)
 
     # Now change to target
+    tbase = target+"/"+THIRD 
     b.chdir(tbase)
 
     # Unzip all builders...

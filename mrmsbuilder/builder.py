@@ -69,6 +69,15 @@ class Builder:
     prefixflags = self.prefixFlags(target)
     shareFlags = self.shareFlags()
     return prefix+prefixflags+cppflags+ldflags+shareFlags
+  def runBuildSetup(self, command):
+    """ Read command for setup in directory and make a file for rerunning it """
+    b.run(command)
+    rerun = open("rebuild.sh", "w")
+    rerun.write(command)
+    rerun.write("\n")
+    rerun.close()
+    b.runOptional("chmod a+x rebuild.sh")
+
   def makeInstall(self):
     """ Do the stock make and make install in a build """
     b.run("make "+self.makeflags)
@@ -79,6 +88,16 @@ class BuilderGroup:
   def __init__(self):
     self.myBuilders = []
     self.myBuild = True
+  def preCheckoutConfig(self, theConf):
+    """ Configuration questions just for this builder """
+    # Default to -j for all builds for speed
+    cpus = theConf.getJobs() 
+    makeFlags = "--jobs="+cpus   # extra make flags
+    for build in self.myBuilders:
+       build.setMakeFlags(makeFlags)
+  def postCheckoutConfig(self, theConf, target):
+    """ Configuration questions just for this builder """
+    pass
   def setBuild(self, flag):
     """ Set if we want to build or not """
     self.myBuild = flag
@@ -115,7 +134,7 @@ class BuilderGroup:
     for build in self.myBuilders:
        req = req & build.checkRequirements()
     return req
-  def checkout(self, target, password, svnoptions):
+  def checkout(self, target, scriptroot, password, svnoptions):
     pass
   def build(self, target):
     pass

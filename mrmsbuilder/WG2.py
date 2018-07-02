@@ -94,7 +94,7 @@ class WG2Build(BuilderGroup):
       # Should be runable now
 
 
-  def checkout(self, target, password, svnoptions):
+  def checkout(self, target, scriptroot, password, svnoptions):
     """ Checkout WG2 to the target directory """
 
     # Script base and source within it

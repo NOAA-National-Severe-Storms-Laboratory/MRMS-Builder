@@ -47,8 +47,8 @@ class buildW2(Builder):
     w2 = target+"/"+WDSS2+"/w2"
     b.chdir(w2)
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
     #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildW2algs(Builder):
@@ -58,7 +58,7 @@ class buildW2algs(Builder):
     b.chdir(w2algs)
     #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildW2ext(Builder):
@@ -68,7 +68,7 @@ class buildW2ext(Builder):
     b.chdir(w2ext)
     #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
     r = self.autogen("./autogen.sh", target)
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildW2tools(Builder):
@@ -102,7 +102,7 @@ class buildW2tools(Builder):
     else:
       r += "no"
 
-    b.run(r)
+    self.runBuildSetup(r)
     self.makeInstall()
   def checkRequirements(self):
     req = True
@@ -123,8 +123,42 @@ class MRMSSevereBuild(BuilderGroup):
     self.myW2Tools = buildW2tools("w2tools")
     l.append(self.myW2Tools)
     self.myBuilders = l
+    self.isResearch = False
+    self.isExport = False
+    self.buildPython = False
 
-  def checkout(self, target, password, options):
+  def preCheckoutConfig(self, theConf):
+    """ Configuration questions just for this builder """
+    BuilderGroup.preCheckoutConfig(self, theConf)
+
+    self.isResearch = theConf.getBoolean("RESEARCH", "Is this a research build (no realtime, no encryption)", "no")
+    self.buildPython = theConf.getBooleanAuto("PYTHONDEV", "Build WDSS2 python development support?", "no", autoPythonDevCheck)
+    if (self.isResearch):
+      self.isExport = True # Research version automatically loses encryption
+    else:
+      self.isExport = theConf.getBoolean("EXPORT", "Is this an exported build (For outside US, turn off encryption)", "no")
+
+    self.ourDFlags = theConf.getOurDFlags()
+    if self.buildPython:
+      self.ourDFlags["PYTHON_DEVEL"] = "2.7"
+    if self.isExport:
+      self.ourDFlags["EXPORT_VERSION"] = "" 
+
+  def postCheckoutConfig(self, theConf, target):
+    """ Configuration stuff for after a successful checkout of code """
+    BuilderGroup.postCheckoutConfig(self, theConf, target)
+
+    # Basically we use any -D values from Lak's auth files, overridden
+    # by anything we express in our configure...and all these go to 
+    # cppflags on make command line... 
+    w2cppflags = ""
+    keypath = self.getKeyLocation(target, self.isResearch)
+    authFileDFlags = theConf.getAuthFileDItems(keypath)
+    map1 = theConf.mergeConfigLists(self.ourDFlags, authFileDFlags) # 2nd overrides...
+    w2cppflags = theConf.listToDFlags(map1)
+    self.setCPPFlags(w2cppflags)
+
+  def checkout(self, target, scriptroot, password, options):
     b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password, options)
 
   def build(self, target):

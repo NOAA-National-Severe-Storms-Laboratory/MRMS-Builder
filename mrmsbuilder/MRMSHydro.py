@@ -18,7 +18,7 @@ class buildHydro(Builder):
   def build(self, target):
     hbase = target+"/"+HYDRO+"/"
     b.chdir(hbase)
-    b.run("./autogen.sh --prefix="+target+" --enable-shared ")
+    self.runBuildSetup("./autogen.sh --prefix="+target+" --enable-shared ")
     self.makeInstall()
 
 class MRMSHydroBuild(BuilderGroup):
@@ -29,7 +29,7 @@ class MRMSHydroBuild(BuilderGroup):
     l.append(buildHydro("hydro"))
     self.myBuilders = l
 
-  def checkout(self, target, password, options):
+  def checkout(self, target, scriptroot, password, options):
     b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password, options)
 
   def build(self, target):
