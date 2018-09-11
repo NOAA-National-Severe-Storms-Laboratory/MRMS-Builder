@@ -105,12 +105,36 @@ class buildWgrib2(BuildTar):
   """ Build Wgrib2 grib2 manipulation tool and library for hydro """
   def build(self, target):
     b.chdir(self.key)
-    os.environ["CPPFLAGS"] = self.localInclude(target)
-    os.environ["LDFLAGS"] = self.localLink(target)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
-    b.run("make")
-    b.run("cp wgrib2 "+target+"/bin/wgrib2")
-    b.runOptional("mkdir "+target+"/include/wgrib2/")
-    b.run("cp *.h "+target+"/include/wgrib2/.")
+    cpp = self.localInclude(target)
+    ldd = self.localLink(target)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
+    cp = "cp wgrib2 "+target+"/bin/wgrib2"
+    mk = "mkdir -p "+target+"/include/wgrib2/" # p to avoid err on exist
+    cp2 = "cp *.h "+target+"/include/wgrib2/."
+    cp3 = "cp libwgrib2.a "+target+"/lib/."
+
+    # Save a rebuild script of what we do here...
+    # Could maybe make a function to clean up this
+    rerun = open("rebuild.sh", "w")
+    rerun.write("export CPPFLAGS=\""+cpp+"\"\n") #1
+    rerun.write("export LDFLAGS=\""+ldd+"\"\n")
+    rerun.write("make\n") # 2
+    rerun.write("make lib\n") # 2.5
+    rerun.write(cp+"\n") # 3
+    rerun.write(mk+"\n") # 4
+    rerun.write(cp2+"\n") # 5
+    rerun.write(cp3+"\n") # 6
+    rerun.close()
+    b.runOptional("chmod a+x rebuild.sh")
+
+    # Run actual commands
+    os.environ["CPPFLAGS"] = cpp #1
+    os.environ["LDFLAGS"] = ldd
+    b.run("make") # 2
+    b.run("make lib") # 2.5
+    b.run(cp) #3
+    b.runOptional(mk) #4
+    b.run(cp2) #5
+    b.run(cp3) #6
     os.environ["CPPFLAGS"] = ""
     os.environ["LDFLAGS"] = ""
 
