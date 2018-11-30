@@ -18,8 +18,6 @@ from . import config as config
 # You'd add a module here if needed
 from .ThirdParty import ThirdPartyBuild
 from .MRMSSevere import MRMSSevereBuild
-from .MRMSSevere import autoGUICheck as autoGUICheck
-from .MRMSSevere import autoPythonDevCheck as autoPythonDevCheck
 from .MRMSHydro import MRMSHydroBuild
 from .WG2 import WG2Build
 from .WG2 import autoGUI2Check as autoGUI2Check
@@ -157,16 +155,12 @@ def doGetBuilders(theConf):
   buildThird = theConf.getBoolean("THIRDPARTY", "Build all third party packages?", "yes")
   buildWDSS2 = theConf.getBoolean("WDSS2", "Build WDSS2 packages?", "yes")
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
-  buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui? (requires openGL libraries installed)", "yes", autoGUICheck)
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
 
   thirdparty = addBuilder(bl, ThirdPartyBuild(), buildThird)
   mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2)
-  mrmssevere.setWantGUI(buildGUI)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(), buildHydro)
-  # Only add the wg2builder if the user has requested to build WG2
-  if buildGUI2:
-    wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
+  wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
   return bl
 
 def doPreCheckoutConfig(aBuilderList, theConf):
@@ -204,17 +198,29 @@ def doCheckRequirements(aBuilderList):
 
 def doCheckout(aFolder, scriptroot, aBuilderList):
   """ Checkout the code from SVN """
-  #user = getUserName() user = getpass.getuser()
-  uprompt ="What "+red+"username"+coff+" for SVN? (Use . for anonymous checkout if you aren't going to commit code.)"
-  user = theConf.getString("USERNAME", uprompt, getpass.getuser())
-  b.setupSVN(user, False) # Change user now
-  if user == ".":
-    password = "" # anonymous shouldn't ask for password
-  else:
-    passPrompt = "To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)"
-    password = theConf.getPassword("PASSWORD", passPrompt, user)
-  revision = theConf.getString("REVISION", "What SVN --revision so you want?", "HEAD")
-  revision = "-r "+revision
+  # Do we require SVN credentials?
+  needSVN = False
+  for bg in aBuilderList:
+    if bg.requireSVN():
+      needSVN = True
+      break
+  password = ""
+  revision = ""
+  user = "."
+
+  if needSVN:
+    #user = getUserName() user = getpass.getuser()
+    uprompt ="What "+red+"username"+coff+" for SVN? (Use . for anonymous checkout if you aren't going to commit code.)"
+    user = theConf.getString("USERNAME", uprompt, getpass.getuser())
+    b.setupSVN(user, False) # Change user now
+    if user == ".":
+      password = "" # anonymous shouldn't ask for password
+    else:
+      passPrompt = "To checkout I might need your "+green+"NSSL"+coff+" password (I'll keep it secret)"
+      password = theConf.getPassword("PASSWORD", passPrompt, user)
+    revision = theConf.getString("REVISION", "What SVN --revision so you want?", "HEAD")
+    revision = "-r "+revision
+
   print(blue+"Checking out code..."+coff)
   for bg in aBuilderList:
     bg.checkout(aFolder, scriptroot, password, revision)
@@ -265,21 +271,19 @@ def buildMRMS(scriptroot):
 
   # Gather all builders we we use for building MRMS
   package = theConf.getString("PACKAGE", "", "NONE")  # Don't prompt for it at moment if missing
-  bl = doGetBuilders(theConf)
-  #wantAdvanced = theConf.getBoolean("ADVANCED", "Do you want to see advanced options and tools?", "no")
-
   print(line)
   version = str(MAJOR_VERSION)+"."+str(MINOR_VERSION)
   print("Welcome to the "+green+"MRMS project builder V"+version+coff)
   print("Using config file: "+configFile+" "+red+confResult+coff)
-  print("Hi, "+blue+user+coff+", I'm your hopefully helpful builder.")
-  print("Modify default.cfg and/or answer questions below:\n")
-#  print(line)
+
+  # This can prompt for individual builder options
+  #wantAdvanced = theConf.getBoolean("ADVANCED", "Do you want to see advanced options and tools?", "no")
 
   # The source tar option just gathers stuff together
   if (package == "SOURCETAR"):
     print("I'm building a package for remote building (PACKAGE=SOURCETAR)\n")
     print(line)
+    bl = doGetBuilders(theConf) # can prompt so don't pull above
     checkout = False
     remote = False
 
@@ -329,10 +333,14 @@ def buildMRMS(scriptroot):
   elif (package == "REMOTE"):
     print("I'm building from a previous created tar package (PACKAGE=REMOTE)\n")
     print(line)
+    bl = doGetBuilders(theConf) # can prompt so don't pull above
     checkout = False
     remote = True
   else:
     print(line)
+    print("Hi, "+blue+user+coff+", I'm your hopefully helpful builder.")
+    print("Modify default.cfg and/or answer questions below:\n")
+    bl = doGetBuilders(theConf) # can prompt so don't pull above
     remote = False
     checkout = theConf.getBoolean("CHECKOUT", "Checkout all code from SVN repository?", "yes")
     

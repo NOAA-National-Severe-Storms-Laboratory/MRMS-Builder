@@ -98,6 +98,9 @@ class BuilderGroup:
   def postCheckoutConfig(self, theConf, target):
     """ Configuration questions just for this builder """
     pass
+  def requireSVN(self):
+    """ Do we require svn credentials? """
+    return True
   def setBuild(self, flag):
     """ Set if we want to build or not """
     self.myBuild = flag

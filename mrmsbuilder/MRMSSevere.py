@@ -131,6 +131,10 @@ class MRMSSevereBuild(BuilderGroup):
     """ Configuration questions just for this builder """
     BuilderGroup.preCheckoutConfig(self, theConf)
 
+    # WG requires MRMSSevere to build
+    buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui? (requires openGL libraries installed)", "yes", autoGUICheck)
+    self.setWantGUI(buildGUI)
+
     self.isResearch = theConf.getBoolean("RESEARCH", "Is this a research build (no realtime, no encryption)", "no")
     self.buildPython = theConf.getBooleanAuto("PYTHONDEV", "Build WDSS2 python development support?", "no", autoPythonDevCheck)
     if (self.isResearch):
