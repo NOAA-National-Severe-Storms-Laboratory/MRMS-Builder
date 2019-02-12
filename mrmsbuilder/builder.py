@@ -69,15 +69,17 @@ class Builder:
     prefixflags = self.prefixFlags(target)
     shareFlags = self.shareFlags()
     return prefix+prefixflags+cppflags+ldflags+shareFlags
-  def runBuildSetup(self, command):
-    """ Read command for setup in directory and make a file for rerunning it """
-    b.run(command)
+  def markRebuild(self, command):
+    """ Write the build command to a script we can call if debugging a failed build """
     rerun = open("rebuild.sh", "w")
     rerun.write(command)
     rerun.write("\n")
     rerun.close()
     b.runOptional("chmod a+x rebuild.sh")
-
+  def runBuildSetup(self, command):
+    """ Read command for setup in directory and make a file for rerunning it """
+    b.run(command)
+    markRebuild(command)
   def makeInstall(self):
     """ Do the stock make and make install in a build """
     b.run("make "+self.makeflags)
@@ -87,7 +89,6 @@ class BuilderGroup:
   """ Build a logical group of packages, such as hydro or third party or severe """
   def __init__(self):
     self.myBuilders = []
-    self.myBuild = True
   def preCheckoutConfig(self, theConf):
     """ Configuration questions just for this builder """
     # Default to -j for all builds for speed
@@ -101,12 +102,6 @@ class BuilderGroup:
   def requireSVN(self):
     """ Do we require svn credentials? """
     return True
-  def setBuild(self, flag):
-    """ Set if we want to build or not """
-    self.myBuild = flag
-  def getBuild(self):
-    """ Get if we want to build or not """
-    return self.myBuild
   def removeBuilder(self, key):
     """ Remove builder with given key name """
     newlist = []

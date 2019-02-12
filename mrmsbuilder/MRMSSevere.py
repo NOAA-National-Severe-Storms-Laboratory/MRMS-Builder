@@ -47,7 +47,6 @@ class buildW2(Builder):
     w2 = target+"/"+WDSS2+"/w2"
     b.chdir(w2)
     r = self.autogen("./autogen.sh", target)
-    #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
     self.runBuildSetup(r)
     self.makeInstall()
 
@@ -56,7 +55,6 @@ class buildW2algs(Builder):
   def build(self, target):
     w2algs = target+"/"+WDSS2+"/w2algs"
     b.chdir(w2algs)
-    #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
     r = self.autogen("./autogen.sh", target)
     self.runBuildSetup(r)
     self.makeInstall()
@@ -66,7 +64,6 @@ class buildW2ext(Builder):
   def build(self, target):
     w2ext = target+"/"+WDSS2+"/w2ext"
     b.chdir(w2ext)
-    #b.run("./autogen.sh --prefix="+target+" --enable-shared ")
     r = self.autogen("./autogen.sh", target)
     self.runBuildSetup(r)
     self.makeInstall()
@@ -85,7 +82,6 @@ class buildW2tools(Builder):
   def build(self, target):
     w2tools = target+"/"+WDSS2+"/w2tools"
     b.chdir(w2tools)
-    #b.run("./autogen.sh --prefix="+target+" --enable-shared "+add)
     r = self.autogen("./autogen.sh", target)
 
     # Add gtk GUI flag if needed/wanted

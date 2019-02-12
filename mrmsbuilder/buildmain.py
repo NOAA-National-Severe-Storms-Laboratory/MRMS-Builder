@@ -145,8 +145,9 @@ def getBuildFolder():
 
 def addBuilder(aList, aBuilder, aBuildItFlag):
   """ Convenience function for adding builder """
-  aBuilder.setBuild(aBuildItFlag)
-  aList.append(aBuilder)
+  if aBuildItFlag:
+    #aBuilder.setBuild(aBuildItFlag)
+    aList.append(aBuilder)
   return aBuilder
 
 def doGetBuilders(theConf):
@@ -157,8 +158,8 @@ def doGetBuilders(theConf):
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
 
-  thirdparty = addBuilder(bl, ThirdPartyBuild(), buildThird)
-  mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2)
+  thirdparty = addBuilder(bl, ThirdPartyBuild(), buildThird | buildWDSS2 | buildHydro)
+  mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2 | buildHydro)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
   return bl
@@ -167,9 +168,8 @@ def doPreCheckoutConfig(aBuilderList, theConf):
   """ Configuration checks we can do before checking out code """
   req = True
   for bg in aBuilderList:
-     if bg.getBuild():
-       bg.preCheckoutConfig(theConf)
-       req = req & bg.checkRequirements()
+     bg.preCheckoutConfig(theConf)
+     req = req & bg.checkRequirements()
   if req == False:
     print("Missing installed libraries or rpms to build, contact IT to install.")
     sys.exit(1)
@@ -177,21 +177,18 @@ def doPreCheckoutConfig(aBuilderList, theConf):
 def doPostCheckoutConfig(aBuilderList, theConf, target):
   """ Build everything wanted (order matters here) """
   for bg in aBuilderList:
-     if bg.getBuild():
-       bg.postCheckoutConfig(theConf, target)
+     bg.postCheckoutConfig(theConf, target)
 
 def doBuild(aBuilderList, target):
   """ Build everything wanted (order matters here) """
   for bg in aBuilderList:
-     if bg.getBuild():
-       bg.build(target)
+     bg.build(target)
 
 def doCheckRequirements(aBuilderList):
   """ Check local system for requirements for building """
   req = True
   for bg in aBuilderList:
-     if bg.getBuild():  # Only check if we're building it?
-       req = req & bg.checkRequirements()
+     req = req & bg.checkRequirements()
   if req == False:
     print("Missing installed libraries or rpms to build, contact IT to install.")
     sys.exit(1)

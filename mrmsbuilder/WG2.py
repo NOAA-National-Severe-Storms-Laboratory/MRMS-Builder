@@ -69,8 +69,8 @@ class WG2Build(BuilderGroup):
     """ Snag git sha version for github pull """
 
     # If not building we don't checkout (at moment), so basically ignore sha question
-    if self.myBuild == True:
-      self.gitsha = theConf.getString("GUI2GIT", "Github SHA for WG2?  master for latest.  c997377 (worldwind archive version)", "c997377")
+    #if self.myBuild == True:
+    self.gitsha = theConf.getString("GUI2GIT", "Github SHA for WG2?  master for latest.  c997377 (worldwind archive version)", "c997377")
     # Don't use date stamp with checkout since we might be remote building later
     self.filename = "WG2-"+self.gitsha+".zip"
 
@@ -150,9 +150,9 @@ class WG2Build(BuilderGroup):
     """ Checkout WG2 to the target directory """
 
     # Since checkout flag is global...
-    if self.myBuild == False:
-      print("Skipping WG2 git pull since we aren't building it\n")
-      return
+    #if self.myBuild == False:
+    #  print("Skipping WG2 git pull since we aren't building it\n")
+    #  return
 
     # Script base and source within it
     base = os.getcwd()
