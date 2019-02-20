@@ -79,7 +79,7 @@ class Builder:
   def runBuildSetup(self, command):
     """ Read command for setup in directory and make a file for rerunning it """
     b.run(command)
-    markRebuild(command)
+    self.markRebuild(command)
   def makeInstall(self):
     """ Do the stock make and make install in a build """
     b.run("make "+self.makeflags)
