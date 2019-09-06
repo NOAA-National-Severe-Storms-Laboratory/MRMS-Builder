@@ -657,8 +657,8 @@ AC_DEFUN([CHECK_GRIB2C],[
    AC_SUBST(GRIB2C_CFLAGS)
 
    W2_CHECKING_LIBRARY(Grib2C)
-   #W2_FIND_LIBRARY_AND_APPEND("$GRIB2CDIR", "$grib2c_lib_search_path", "grib2c", GRIB2C_LIBS)
-   W2_FIND_LIBRARY_AND_APPEND("$GRIB2CDIR", "$grib2c_lib_search_path", "g2c_v1.6.0", GRIB2C_LIBS)
+   W2_FIND_LIBRARY_AND_APPEND("$GRIB2CDIR", "$grib2c_lib_search_path", "grib2c", GRIB2C_LIBS)
+   #W2_FIND_LIBRARY_AND_APPEND("$GRIB2CDIR", "$grib2c_lib_search_path", "g2c_v1.6.0", GRIB2C_LIBS)
    AC_SUBST(GRIB2C_LIBS)
 ])
 

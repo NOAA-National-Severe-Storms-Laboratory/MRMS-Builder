@@ -106,7 +106,7 @@ class buildWgrib2(BuildTar):
   def build(self, target):
     b.chdir(self.key)
     cpp = self.localInclude(target)
-    ldd = self.localLink(target)+" -lnetcdf -lg2c_v1.6.0 -lm -ljasper -lpng -lproj -lgeo"
+    ldd = self.localLink(target)+" -lnetcdf -lgrib2c -lm -ljasper -lpng -lproj -lgeo"
     cp = "cp wgrib2 "+target+"/bin/wgrib2"
     mk = "mkdir -p "+target+"/include/wgrib2/" # p to avoid err on exist
     cp2 = "cp *.h "+target+"/include/wgrib2/."
@@ -182,10 +182,10 @@ class buildG2CLIB(BuildThird):
     nmake.write("include makefileBASE\n")
     nmake.write("INC=-I"+target+"/include\n")
     #nmake.write("CFLAGS= -O3 -g -m64 $(INC) $(DEFS) -D__64BIT__\n")
-    nmake.write("CFLAGS= -O3 -g -m64 $(INC) $(DEFS)\n")
+    nmake.write("CFLAGS= -fPIC -O3 -g -m64 $(INC) $(DEFS)\n")
     nmake.close()
     b.run("make")
-    b.run("cp libg2c*a "+target+"/lib")
+    b.run("cp libg2c_v1.6.0.a "+target+"/lib/libgrib2c.a")
     b.run("cp *.h "+target+"/include")
     os.environ["CPPFLAGS"] = ""
     os.environ["LDFLAGS"] = ""
