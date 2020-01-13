@@ -158,7 +158,7 @@ def doGetBuilders(theConf):
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
 
-  thirdparty = addBuilder(bl, ThirdPartyBuild(), buildThird | buildWDSS2 | buildHydro)
+  thirdparty = addBuilder(bl, ThirdPartyBuild(theConf), buildThird | buildWDSS2 | buildHydro)
   mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2 | buildHydro)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
@@ -193,8 +193,9 @@ def doCheckRequirements(aBuilderList):
     print("Missing installed libraries or rpms to build, contact IT to install.")
     sys.exit(1)
 
-def doCheckout(aFolder, scriptroot, aBuilderList):
-  """ Checkout the code from SVN """
+def doCheckoutSVN(aFolder, scriptroot, aBuilderList):
+  """ Checkout the code repository from SVN """
+
   # Do we require SVN credentials?
   needSVN = False
   for bg in aBuilderList:
@@ -206,7 +207,6 @@ def doCheckout(aFolder, scriptroot, aBuilderList):
   user = "."
 
   if needSVN:
-    #user = getUserName() user = getpass.getuser()
     uprompt ="What "+red+"username"+coff+" for SVN? (Use . for anonymous checkout if you aren't going to commit code.)"
     user = theConf.getString("USERNAME", uprompt, getpass.getuser())
     b.setupSVN(user, False) # Change user now
@@ -223,6 +223,41 @@ def doCheckout(aFolder, scriptroot, aBuilderList):
     bg.checkout(aFolder, scriptroot, password, revision)
   print(blue+"Check out success."+coff)
   return [user, revision]
+
+def doCheckoutGIT(checkmode, aFolder, scriptroot, aBuilderList):
+  """ Checkout the code repository from GIT """
+  gitcommand = "git clone "+checkmode+" MRMS-GIT"
+  print(blue+"Checking out code from GIT... "+coff)
+  print("GIT command:"+gitcommand)
+  oldpwd = os.getcwd()
+  b.chdir(aFolder+"/")
+  b.run(gitcommand)
+  #  Allow classes to move stuff where needed
+  for bg in aBuilderList:
+    bg.checkoutPostGIT(aFolder, scriptroot)
+  os.chdir(oldpwd)
+
+  # Let non main build svn stuff still do custom checkouts, such as WG2
+  print(blue+"Checking out other non-svn code..."+coff)
+  for bg in aBuilderList:
+    if not bg.requireSVN():
+      bg.checkout(aFolder, scriptroot, "", "")
+  print(blue+"Check out success."+coff)
+  return ["none", ""]
+
+def doCheckout(aFolder, scriptroot, aBuilderList):
+  """ Checkout the code repository """
+
+  # This is messy.  Either full checkout from a single git for MRMS, or
+  # each of the SVNs
+  repo ="Where are we checking MRMS code out from? SVN or give GIT origin url."
+  checkmode = theConf.getString("CHECKFROM", repo, "SVN")
+  if (checkmode == "SVN" or checkmode == "svn"):
+    print("--->SVN checkout-----")
+    return doCheckoutSVN(aFolder, scriptroot, aBuilderList)
+  else:
+    print("--->GIT checkout-----")
+    return doCheckoutGIT(checkmode, aFolder, scriptroot, aBuilderList)
 
 def doMarkFinishedBuild(aFolder):
   """ Mark file for a finished build """

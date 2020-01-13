@@ -134,5 +134,7 @@ class BuilderGroup:
     return req
   def checkout(self, target, scriptroot, password, svnoptions):
     pass
+  def checkoutPostGIT(self, target, scriptroot):
+    pass
   def build(self, target):
     pass

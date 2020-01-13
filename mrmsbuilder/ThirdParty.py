@@ -211,6 +211,25 @@ class buildUDUNITS(BuildTar):
     self.runBuildSetup(r)
     self.makeInstall()
 
+class buildBOOST(BuildTar):
+  """ Build BOOST library """
+  def checkRequirements(self):
+    req = True
+    return req
+  def makeInstall(self):
+    """ Do BOOST make and install """
+    b.run("./b2")
+    b.run("./b2 install")
+  def build(self, target):
+    """ This is really the 'configure' stage """
+    b.chdir(self.key)
+    r = self.autogen("./bootstrap.sh", target)
+    r = "./bootstrap.sh "+self.prefixFlags(target)
+    # Only one binary in here, lol
+    #r = r + " --bindir="+t+"/bin/UDUNITS"
+    self.runBuildSetup(r)
+    self.makeInstall()
+
 class buildHDF5(BuildTar):
   """ Kill HDF5 warnings hack """
   def HDF5KillWarnings(self):
@@ -358,7 +377,7 @@ class buildDualpolQPE(BuildTar):
 
 class ThirdPartyBuild(BuilderGroup):
   """ Build all of required third party """
-  def __init__(self):
+  def __init__(self, theConf):
     """ Get the builders from this module """
     #  l.append(buildLIBPNG("libpng-1.6.28", t))
 
@@ -378,9 +397,11 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildProj4("proj-4.9.3"))
 
     # Netcdf libraries
-    l.append(buildHDF5("hdf5-1.8.12"))
+    #l.append(buildHDF5("hdf5-1.8.12"))
+    l.append(buildHDF5("hdf5-1.10.5"))
     #l.append(buildNETCDF("netcdf-4.3.3.1"))
-    l.append(buildNETCDF("netcdf-c-4.6.1"))
+    #l.append(buildNETCDF("netcdf-c-4.6.1"))
+    l.append(buildNETCDF("netcdf-c-4.7.3"))
     l.append(buildNETCDFPLUS("netcdf-cxx-4.2"))
 
     # Grib2 tools (Requires: projection, netcdf, jasper and g2clib)
@@ -400,6 +421,11 @@ class ThirdPartyBuild(BuilderGroup):
 
     # MRMSHydro to MRMSSevere datatype linking library
     l.append(buildHMRGW2("hmrgw2_lib-05102017"))
+
+    # BOOST
+    buildBoost = theConf.getBoolean("BOOST", "Build BOOST library?", "no")
+    if buildBoost:
+      l.append(buildBOOST("boost_1_71_0"))
 
     # The monster at the end...
     # This is such a useful library, but it's a big one.
