@@ -448,6 +448,10 @@ class ThirdPartyBuild(BuilderGroup):
 
     b.chdir(base)
 
+  def requireSVN(self):
+    """ Do we require svn credentials? """
+    return False
+
   def build(self, target):
     """ Build third party used by all packages """
 

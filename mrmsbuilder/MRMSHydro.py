@@ -33,7 +33,7 @@ class MRMSHydroBuild(BuilderGroup):
     b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password, options)
 
   def checkoutPostGIT(self, target, scriptroot):
-    b.runOptional("mv HMET "+target+"/"+HYDRO)
+    b.runOptional("mv HMET/src "+target+"/"+HYDRO)
 
   def build(self, target):
     """ Build HYDRO (MRMS_Hydro) """

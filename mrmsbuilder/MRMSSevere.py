@@ -162,7 +162,7 @@ class MRMSSevereBuild(BuilderGroup):
     b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password, options)
 
   def checkoutPostGIT(self, target, scriptroot):
-    b.runOptional("mv WDSS2 "+target+"/"+WDSS2)
+    b.runOptional("mv WDSS2/src "+target+"/"+WDSS2)
 
   def build(self, target):
     """ Build WDSS2 (MRMS_Severe) """

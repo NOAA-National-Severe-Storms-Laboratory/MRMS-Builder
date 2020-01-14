@@ -232,6 +232,7 @@ def doCheckoutGIT(checkmode, aFolder, scriptroot, aBuilderList):
   oldpwd = os.getcwd()
   b.chdir(aFolder+"/")
   b.run(gitcommand)
+  b.chdir(aFolder+"/MRMS-GIT")
   #  Allow classes to move stuff where needed
   for bg in aBuilderList:
     bg.checkoutPostGIT(aFolder, scriptroot)
