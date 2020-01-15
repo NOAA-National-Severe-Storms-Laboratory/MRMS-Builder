@@ -236,6 +236,13 @@ def doCheckoutGIT(checkmode, aFolder, scriptroot, aBuilderList):
   #  Allow classes to move stuff where needed
   for bg in aBuilderList:
     bg.checkoutPostGIT(aFolder, scriptroot)
+  # Hack subfolders into better location
+  b.runOptional("mv ANC ../.")
+  b.runOptional("mv FLASH ../.")
+  b.runOptional("mv NCO_config ../.")
+  b.runOptional("rm -rf "+aFolder+"/MRMS-GIT/util_3rd_party")
+  # Leave other stuff for now (this will fail ok if anything left)
+  b.runOptional("rmdir "+aFolder+"/MRMS-GIT")
   os.chdir(oldpwd)
 
   # Let non main build svn stuff still do custom checkouts, such as WG2
