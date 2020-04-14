@@ -317,7 +317,7 @@ def checkoutSingle(child, command, password):
 
     elif ((i == 3) or (i == 4)): 
       print(">>Svn failure...aborting..")
-      sys.exit()
+      return 1
 
     elif (i == 5): 
       print(">>Password possibly expired...log in and change it and retry...aborting..")
@@ -338,7 +338,7 @@ def checkoutSingle(child, command, password):
     else:
       print(child.before)
       #print("We got EOF!\n")
-      return
+      return 0
 
 def checkoutSVN(what,where, password, options):
   """ Checkout a single SVN repository """
@@ -362,7 +362,17 @@ def checkoutSVN(what,where, password, options):
   #child.logfile=sys.stdout
 
   #print("Running checkout...give me a minute to download sources...\n")
-  checkoutSingle(child, command, password)
+  svntry = 1
+  maxsvn = 2
+  while True:
+    back = checkoutSingle(child, command, password)
+    if back == 1: # magic number svn error
+      if svntry >= 2:
+        print("Tried svn {0} times, failed.".format(svntry))
+        sys.exit()
+      svntry = svntry + 1
+    else:
+      break  # Good to go
 
   # Dump rest of unread or not?  This should be the revision info on success
   print(child.read())

@@ -215,27 +215,6 @@ AC_DEFUN([W2_ENABLE_PSQL],
     ]
 )
 
-AC_DEFUN([W2_ENABLE_ORPG],
-    [AC_ARG_ENABLE(orpg,
-        [AC_HELP_STRING([--enable-orpg],[turn on orpg support])],
-        [if test x"${enableval}" = xyes; then
-            orpg=true
-        elif test x"${enableval}" = xno; then
-            orpg=false
-        else
-            AC_MSG_ERROR(bad value ${enableval} for --enable-orpg)
-        fi],
-        [orpg=false]
-    )
-    AM_CONDITIONAL(ORPG, test x"${orpg}" = xtrue)
-    AC_MSG_RESULT("Building orpg? ... ${orpg}")
-# orpg_wdssii now in w2ext
-#    if test x"${orpg}" = xtrue; then
-#         SOURCELIBS="${SOURCELIBS} -lorpg_wdssii"
-#    fi
-    ]
-)
-
 AC_DEFUN([W2_ENABLE_WISH],
     [AC_ARG_ENABLE(wish,
         [AC_HELP_STRING([--disable-orpg],[turn off wish support])],
@@ -721,112 +700,6 @@ AC_DEFUN([CHECK_FAM],[
    fi
 ])
 
-dnl AC_DEFUN([CHECK_PSQL],[
-dnl
-dnl  if test x"$psql" = xtrue
-dnl  then
-dnl
-dnl    psql_search_path="$WDSSIIDIR/include /usr/local /usr"
-dnl
-dnl    AC_CHECKING(for PostgreSQL files)
-dnl    W2_FIND_HEADER_AND_APPEND("$PSQLDIR", "$psql_search_path", "libpq-fe.h", PSQLINCLUDE)
-dnl    AC_SUBST(PSQLINCLUDE)
-dnl
-dnl    W2_CHECKING_LIBRARY(PostgreSQL)
-dnl    W2_FIND_LIBRARY_AND_APPEND("$PSQLDIR", "$psql_search_path", "pq", PSQLLIB)
-dnl    AC_SUBST(PSQLLIB)
-dnl
-dnl  fi
-dnl])
-
-AC_DEFUN([CHECK_ORPGINFR],[
-
-  # Regardless of which libraries we need, we always need the headers...
-  W2_CHECK_HEADERS(
-    ORPGDIR,
-    [
-      $ORPGDIR/include
-      $ORPGDIR/lib/include
-      $ORPGDIR/include/orpginfr/include
-    ],
-    [
-      $prefix/include/orpginfr/include
-      $HOME/include
-      $HOME/include/orpginfr/include
-      $HOME/WDSS2/include/orpginfr/include
-      /usr/local/include
-      /usr/include
-      /usr/local/include/orpginfr/include
-      /usr/include/orpginfr/include
-      /export/home/codeorpg/include
-      /export/home/codeorpg/lib/include
-      /users/opup/nightly/OPUP/include/orpg
-      /nssl/nsslsun/wdssii/orpginfr/lib/include
-      /home/wdssii/orpginfr/include
-      /home/wdssii/include/orpginfr/include
-      /home/wdssii/include
-      $PWD/../orpginfr/include
-      $PWD/../orpginfr/lib/include
-      $PWD/../include/orpginfr/include
-    ],
-    rss.h,
-    ORPGINCLUDE)
-
-  if test x"$orpg" = xtrue; then # full ORPG
-
-    # full orpg libraries...
-    AC_CHECKING(for --- full ORPG libraries ---)
-    W2_FIND_PATH(
-      ORPGDIR,
-      [
-        $ORPGDIR/../lib/lnux_x86
-      ],
-      [
-        /usr/local/lib
-        /usr/lib
-        /export/home/codeorpg/lib/slrs_spk
-        $HOME/lib
-        $HOME/WDSS2/lib
-        /users/opup/nightly/OPUP/lib
-      ],
-      liborpg.so,
-      ORPGLIB_DIR)
-
-    orpglib1="-lrpgc -lorpg++ -lorpg -lhci -linfr -lobjcore"
-    orpglib2="-lsocket -lelf -lnsl -lXm -lXt -lX11 -lMrm -lz -lm"
-    ORPG_LIBS="-L${ORPGLIB_DIR} $orpglib1 $orpglib2"
-
-  elif test x"$rssd" = xlibinfr; then
-
-    # Using libinfr implementation of rss_notifier
-    W2_CHECKING_LIBRARY([ORPG's infr libraries])
-    orpg_search_path="$prefix $HOME $code_search_path /usr/local /usr $HOME/WDSS2"
-    orpg_search_path="$orpg_search_path /nssl/nsslsun/wdssii/orpginfr /home/wdssii"
-    orpg_search_path="$orpg_search_path $HOME/lib/irix $PWD/../lib/irix"
-    orpg_search_path="$orpg_search_path /export/home/codeorpg/lib/slrs_spk"
-    W2_FIND_LIBRARY("$ORPGDIR", "$orpg_search_path", "infr", orpg_lib_dir, orpg_lib_base)
-    ORPG_LIBS="$orpg_lib_dir/$orpg_lib_base"
-
-  elif test x"$rssd" = xglib; then
-
-    # Using glib implementation of rss_notifier
-    GLIB_REQUIRED=2.2.0
-    PKG_CHECK_MODULES(GLIB, glib-2.0 >= $GLIB_REQUIRED \
-                            gobject-2.0 >= $GLIB_REQUIRED)
-    ORPG_LIBS="$GLIB_LIBS"
-    ORPGINCLUDE="$ORPGINCLUDE $GLIB_CFLAGS"
-
-  else
-
-    AC_MSG_ERROR([Don't know which implementation of rss_notifier to use!])
-
-  fi
-
-  AC_SUBST(ORPGINCLUDE)
-  AC_SUBST(ORPG_LIBS)
-])
-
-
 AC_DEFUN([CHECK_WX],[
   W2_WITH_WX()
   if test x$wx = xtrue
@@ -1004,7 +877,6 @@ AC_DEFUN([W2_CONFIGURE_W2],[
 
   W2_WITH_RSSD
   W2_ENABLE_NEXRAD
-  W2_ENABLE_ORPG
 
 ])
 
@@ -1016,7 +888,6 @@ AC_DEFUN([W2_CONFIGURE_W2EXT],[
   W2_ENABLE_HIRES
   W2_ENABLE_WISH
   W2_ENABLE_NEXRAD
-  W2_ENABLE_ORPG
 ])
 
 AC_DEFUN([W2_CONFIGURE_WG],[
@@ -1094,7 +965,6 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
 
   CHECK_EXTRAS
   CHECK_SDTS_AND_STL
-  CHECK_ORPGINFR
   CHECK_NETCDF
   CHECK_LDUNITS
   # CHECK_BOOST  -- not used
@@ -1116,7 +986,6 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   DISPLAY_3rdPARTY_INCLUDES="-I$prefix/include"
 
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${SDTS_LIBS} ${STLPORT_LIBS}"
-  CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${ORPG_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${UDUNITS_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${NETCDF_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${GRIB2C_LIBS}"
@@ -1131,7 +1000,6 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
 
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${SDTS_CFLAGS} ${STLPORT_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${UDUNITS_CFLAGS}"
-  CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${ORPGINCLUDE}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${NETCDF_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${GRIB2C_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${ZLIB_CFLAGS} ${BZLIB_CFLAGS}"
@@ -1163,7 +1031,7 @@ AC_DEFUN([CODE_CONFIGURE],[
 
   W2_CHECKING_LIBRARY(CODE)
   W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", "sources", CODELIBRARIES)
-  for tmplib in w2netcdf w2algs util_alg w2gis c_datatype rss_notifier ; do
+  for tmplib in w2netcdf w2algs util_alg w2gis c_datatype ; do
     W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", $tmplib, CODELIBRARIES)
   done
   W2_WITH_FAM()

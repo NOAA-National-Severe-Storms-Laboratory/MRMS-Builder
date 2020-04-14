@@ -43,34 +43,71 @@ def autoPythonDevCheck():
 
 class buildW2(Builder):
   """ Build W2 library """
+  def __init__(self, key, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
+    Builder.__init__(self, key)
+
   def build(self, target):
     w2 = target+"/"+WDSS2+"/w2"
     b.chdir(w2)
     r = self.autogen("./autogen.sh", target)
+
+    # Add orpginfr.  This doesn't build after mrms12
+    #r += " --with-orpginfr="
+    #if self.mrmsVersion == "mrms12":
+    #  r += "yes"
+    #else:
+    #  r += "no"
+
     self.runBuildSetup(r)
     self.makeInstall()
 
 class buildW2algs(Builder):
   """ Build W2algs library """
+  def __init__(self, key, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
+    Builder.__init__(self, key)
+
   def build(self, target):
     w2algs = target+"/"+WDSS2+"/w2algs"
     b.chdir(w2algs)
     r = self.autogen("./autogen.sh", target)
+
+    # Add orpginfr.  This doesn't build after mrms12
+    #r += " --with-orpginfr="
+    #if self.mrmsVersion == "mrms12":
+    #  r += "yes"
+    #else:
+    #  r += "no"
+
     self.runBuildSetup(r)
     self.makeInstall()
 
 class buildW2ext(Builder):
   """ Build W2ext library """
+  def __init__(self, key, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
+    Builder.__init__(self, key)
+
   def build(self, target):
     w2ext = target+"/"+WDSS2+"/w2ext"
     b.chdir(w2ext)
     r = self.autogen("./autogen.sh", target)
+
+    # Add orpginfr.  This doesn't build after mrms12
+    #r += " --with-orpginfr="
+    #if self.mrmsVersion == "mrms12":
+    #  r += "yes"
+    #else:
+    #  r += "no"
+
     self.runBuildSetup(r)
     self.makeInstall()
 
 class buildW2tools(Builder):
   """ Build W2tools library """
-  def __init__(self, key):
+  def __init__(self, key, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
     self.myWantGUI = True
     self.myWantPythonDev = False
     # New stylesuper(buildW2tools, self).__init__(key)
@@ -110,13 +147,14 @@ class buildW2tools(Builder):
 
 class MRMSSevereBuild(BuilderGroup):
   """ Build all of MRMS Severe (WDSS2) """
-  def __init__(self):
+  def __init__(self, theConf, mrmsVersion):
     """ Get the builders from this module """
+    self.mrmsVersion = mrmsVersion
     l = []
-    l.append(buildW2("w2"))
-    l.append(buildW2algs("w2algs"))
-    l.append(buildW2ext("w2ext"))
-    self.myW2Tools = buildW2tools("w2tools")
+    l.append(buildW2("w2", mrmsVersion))
+    l.append(buildW2algs("w2algs", mrmsVersion))
+    l.append(buildW2ext("w2ext", mrmsVersion))
+    self.myW2Tools = buildW2tools("w2tools", mrmsVersion)
     l.append(self.myW2Tools)
     self.myBuilders = l
     self.isResearch = False
@@ -172,7 +210,10 @@ class MRMSSevereBuild(BuilderGroup):
     # Use our new m4 to static link third
     b.runOptional("rm "+target+"/"+WDSS2+"/config/w2.m4")
     relativePath = os.path.dirname(os.path.realpath(__file__))
-    b.run("cp "+relativePath+"/newm4.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
+    if self.mrmsVersion == "mrms12":
+      b.run("cp "+relativePath+"/newm4.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
+    else:
+      b.run("cp "+relativePath+"/newm4-mrms20.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
 
     # Build all builders...
     for build in self.myBuilders:

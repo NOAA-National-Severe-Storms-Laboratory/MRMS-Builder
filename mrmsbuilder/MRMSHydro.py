@@ -23,8 +23,9 @@ class buildHydro(Builder):
 
 class MRMSHydroBuild(BuilderGroup):
   """ Build all of MRMS Hydro """
-  def __init__(self):
+  def __init__(self, theConf, mrmsVersion):
     """ Get the builders from this module """
+    self.mrmsVersion = mrmsVersion
     l = []
     l.append(buildHydro("hydro"))
     self.myBuilders = l

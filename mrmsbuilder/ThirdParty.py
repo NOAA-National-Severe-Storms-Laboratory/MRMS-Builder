@@ -72,6 +72,19 @@ class buildProj4(BuildTar):
   """ Build proj4 library """
   def build(self, target):
     b.chdir(self.key)
+    os.environ["SQLITE3_CHECK"] = "yes"
+    os.environ["PATH"] = target+"/bin:"+os.environ["PATH"]
+    # The target is in the paths already
+    os.environ["SQLITE3_CFLAGS"] = ""
+    os.environ["SQLITE3_LIBS"] = " -lsqlite3"
+    r = self.autogen("./configure", target)
+    b.run(r)
+    self.makeInstall()
+
+class buildSqlite(BuildTar):
+  """ Build Sqlite library """
+  def build(self, target):
+    b.chdir(self.key)
     r = self.autogen("./configure", target)
     b.run(r)
     self.makeInstall()
@@ -377,7 +390,14 @@ class buildDualpolQPE(BuildTar):
 
 class ThirdPartyBuild(BuilderGroup):
   """ Build all of required third party """
-  def __init__(self, theConf):
+  def __init__(self, theConf, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
+    if mrmsVersion == "mrms12":
+      self.mrms12(theConf)
+    else:
+      self.mrms20(theConf)
+
+  def mrms12(self, theConf):
     """ Get the builders from this module """
     #  l.append(buildLIBPNG("libpng-1.6.28", t))
 
@@ -430,6 +450,48 @@ class ThirdPartyBuild(BuilderGroup):
     # The monster at the end...
     # This is such a useful library, but it's a big one.
     l.append(buildGDAL("gdal-2.1.3"))
+    self.myBuilders = l
+
+  def mrms20(self, theConf):
+    l = []
+
+    # ----------------------------------------------------------
+    # General requirements
+    l.append(buildBOOST("boost_1_71_0"))
+    l.append(buildJASPER("jasper-1.900.1"))
+    l.append(buildZLIB("zlib-1.2.11"))  # For Netcdf4/g2clib
+    l.append(buildCURL("curl-7.69.1"))  # For HDF/Netcdf
+    l.append(buildUDUNITS("udunits-2.2.26"))
+
+    # ----------------------------------------------------------
+    # Projection libraries
+    l.append(buildGCTPC("gctpc")) # Maybe we drop this?
+    l.append(buildSqlite("sqlite-snapshot-202003121754")) # for proj7..for gdal 3
+    l.append(buildProj4("proj-6.3.1"))  # Latest for GDAL 3.  7 won't build yet on centos7
+
+    # ----------------------------------------------------------
+    # Data reading libraries
+    l.append(buildHDF5("hdf5-1.12.0"))
+    l.append(buildNETCDF("netcdf-c-4.7.4"))
+    l.append(buildGDAL("gdal-3.0.4"))
+    # Build afterwards, so grib2.h isn't snagged by gdal's version of this...
+    l.append(buildG2CLIB("g2clib-1.6.0")) # Require jasper, pgn, zlib
+
+    # ----------------------------------------------------------
+    # MRMS only free third party
+    l.append(buildNETCDFPLUS("netcdf-cxx-4.2")) # Please die, pleeeease
+
+    # ----------------------------------------------------------
+    # MRMS copyrighted
+    #
+    # FIXME: Move to MRMSSevere I think.
+
+    # Krause stuff
+    l.append(buildDualpol("dualpol-08152017"))
+    l.append(buildDualpolQPE("dualpol-QPE-09122017"))
+
+    # We're going to build it inside hmet I think. Or merge into WDSSII
+    #l.append(buildHMRGW2("hmrgw2_lib-05102017"))  Duh build in HMET/lib
     self.myBuilders = l
 
   def checkout(self, target, scriptroot, password, options):

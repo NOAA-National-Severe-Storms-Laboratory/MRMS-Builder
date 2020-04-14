@@ -153,14 +153,21 @@ def addBuilder(aList, aBuilder, aBuildItFlag):
 def doGetBuilders(theConf):
   """ Get the list of top builders we will build """
   bl = []
+
+  mrmsVersion = theConf.getString("VERSION", "Build version? (mrms12, mrms20)", "mrms12")
+  if mrmsVersion == "mrms12":
+    print("Building third party libraries as older MRMS12...") 
+  else:
+    print("Building third party libraries as newer MRMS20") 
+
   buildThird = theConf.getBoolean("THIRDPARTY", "Build all third party packages?", "yes")
   buildWDSS2 = theConf.getBoolean("WDSS2", "Build WDSS2 packages?", "yes")
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
 
-  thirdparty = addBuilder(bl, ThirdPartyBuild(theConf), buildThird | buildWDSS2 | buildHydro)
-  mrmssevere = addBuilder(bl, MRMSSevereBuild(), buildWDSS2 | buildHydro)
-  mrmshydro = addBuilder(bl, MRMSHydroBuild(), buildHydro)
+  thirdparty = addBuilder(bl, ThirdPartyBuild(theConf, mrmsVersion), buildThird | buildWDSS2 | buildHydro)
+  mrmssevere = addBuilder(bl, MRMSSevereBuild(theConf, mrmsVersion), buildWDSS2 | buildHydro)
+  mrmshydro = addBuilder(bl, MRMSHydroBuild(theConf, mrmsVersion), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
   return bl
 
