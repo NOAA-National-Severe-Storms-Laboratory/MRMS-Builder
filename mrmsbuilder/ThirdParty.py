@@ -231,13 +231,20 @@ class buildBOOST(BuildTar):
     return req
   def makeInstall(self):
     """ Do BOOST make and install """
+    with open("rebuild.sh", "a") as rebuilder:
+      rebuilder.write("./b2")
+      rebuilder.write("./b2 install\n")
     b.run("./b2")
     b.run("./b2 install")
+    
   def build(self, target):
     """ This is really the 'configure' stage """
     b.chdir(self.key)
-    r = self.autogen("./bootstrap.sh", target)
+    #r = self.autogen("./bootstrap.sh", target)
     r = "./bootstrap.sh "+self.prefixFlags(target)
+    # Make sure we don't hunt for system pyconfig.h, it's probably ancient
+    # python anyway.  
+    r = r + " --without-libraries=python"
     # Only one binary in here, lol
     #r = r + " --bindir="+t+"/bin/UDUNITS"
     self.runBuildSetup(r)
