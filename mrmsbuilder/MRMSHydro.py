@@ -21,6 +21,27 @@ class buildHydro(Builder):
     self.runBuildSetup("./autogen.sh --prefix="+target+" --enable-shared ")
     self.makeInstall()
 
+class buildFortran(Builder):
+  """ Build little fortran programs """
+  def checkRequirements(self):
+    req = True
+    # Test 1: Check for gfortran
+    if not b.checkFirstText("GFORTRAN HYDRO APPS",["which", "gfortran"], "gfortran"):
+      req = False
+    return req
+  def build(self, target):
+    hbase = target+"/"+HYDRO+"/"
+
+    b.chdir(hbase)
+    b.chdir("algs/solar_zenith")
+    b.run("make")
+    b.run("cp solar_zenith "+target+"/bin/solar_zenith")
+
+    b.chdir(hbase)
+    b.chdir("tools/convert_goes16_for_anc")
+    b.run("make")
+    b.run("cp convert_goes16_for_anc "+target+"/bin/convert_goes16_for_anc")
+
 class MRMSHydroBuild(BuilderGroup):
   """ Build all of MRMS Hydro """
   def __init__(self, theConf, mrmsVersion):
@@ -28,6 +49,9 @@ class MRMSHydroBuild(BuilderGroup):
     self.mrmsVersion = mrmsVersion
     l = []
     l.append(buildHydro("hydro"))
+    buildlittle = theConf.getBoolean("HYDROFORTRAN", "Build HYDRO fortran apps?", "no")
+    if buildlittle:
+      l.append(buildFortran("hydrofortran"))
     self.myBuilders = l
 
   def checkout(self, target, scriptroot, password, options):

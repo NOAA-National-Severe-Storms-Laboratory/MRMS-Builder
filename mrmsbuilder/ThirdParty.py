@@ -447,7 +447,8 @@ class ThirdPartyBuild(BuilderGroup):
     l.append(buildDualpolQPE("dualpol-QPE-09122017"))
 
     # MRMSHydro to MRMSSevere datatype linking library
-    l.append(buildHMRGW2("hmrgw2_lib-05102017"))
+    # We build this native in HMET/lib now ALWAYS
+    #l.append(buildHMRGW2("hmrgw2_lib-05102017"))
 
     # BOOST
     buildBoost = theConf.getBoolean("BOOST", "Build BOOST library?", "no")
