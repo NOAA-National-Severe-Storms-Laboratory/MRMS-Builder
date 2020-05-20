@@ -359,7 +359,8 @@ class buildGDAL(BuildTar):
     r = r + " --with-curl="+target        # Use built one
     r = r + " --with-hdf5="+target        # Use built one
     r = r + " --with-netcdf="+target      # Use built one
-    r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
+    #r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
+    r = r + " --with-grib"                # FLASH/ANC Carrie's grib2
     r = r + " --without-xml2"             # avoid conflicts - we don't need it
     r = r + " --with-sqlite3=no"          # Disable snagging it 
     self.runBuildSetup(r)
@@ -408,39 +409,43 @@ class ThirdPartyBuild(BuilderGroup):
     """ Get the builders from this module """
     #  l.append(buildLIBPNG("libpng-1.6.28", t))
 
-    # --------------------------------------------
-    # Tree one: Needed for grib2 manipulation for
-    # various reasons.
     l = []
+
+    # ----------------------------------------------------------
+    # General requirements
+    # BOOST
+    buildBoost = theConf.getBoolean("BOOST", "Build BOOST library?", "no")
+    if buildBoost:
+      l.append(buildBOOST("boost_1_71_0"))
     l.append(buildJASPER("jasper-1.900.1"))
-    l.append(buildG2CLIB("g2clib-1.6.0")) # Require jasper
 
     # HDF/Netcdf requires zlib and curl (redhat five fails horribly without this)
     l.append(buildZLIB("zlib-1.2.11"))  # For Netcdf4
     l.append(buildCURL("curl-7.55.0"))  # For Netcdf4
+    l.append(buildUDUNITS("udunits-2.2.24"))
 
+    # ----------------------------------------------------------
     # Projection libraries
     l.append(buildGCTPC("gctpc")) 
     l.append(buildProj4("proj-4.9.3"))
 
-    # Netcdf libraries
+    # ----------------------------------------------------------
+    # Data libraries
     #l.append(buildHDF5("hdf5-1.8.12"))
     l.append(buildHDF5("hdf5-1.10.5"))
-    #l.append(buildNETCDF("netcdf-4.3.3.1"))
+    #l.append(buildHDF5("hdf5-1.12.0")) newest
     #l.append(buildNETCDF("netcdf-c-4.6.1"))
     l.append(buildNETCDF("netcdf-c-4.7.3"))
+    #l.append(buildNETCDF("netcdf-c-4.7.4"))
     l.append(buildNETCDFPLUS("netcdf-cxx-4.2"))
 
+    l.append(buildGDAL("gdal-2.1.3"))
+    l.append(buildG2CLIB("g2clib-1.6.0")) # Build after gdal so gdal doesn't get grib.
+
     # Grib2 tools (Requires: projection, netcdf, jasper and g2clib)
-    l.append(buildWgrib2("wgrib2-2.0.6c")) # NOTE: make sure links to current gctpc in LDFLAGS
+    #l.append(buildWgrib2("wgrib2-2.0.6c")) # NOTE: make sure links to current gctpc in LDFLAGS
 
-    # --------------------------------------------
-    # Tree two: Units and other stuff, order here
-    # shouldn't matter
-
-    # Units and orpginfr stuff...
-    l.append(buildUDUNITS("udunits-2.2.24"))
-    l.append(buildORPGINFR("orpginfr-3.0.1"))
+    #l.append(buildORPGINFR("orpginfr-3.0.1"))
 
     # Finally Krause code we use
     l.append(buildDualpol("dualpol-08152017"))
@@ -450,14 +455,6 @@ class ThirdPartyBuild(BuilderGroup):
     # We build this native in HMET/lib now ALWAYS
     #l.append(buildHMRGW2("hmrgw2_lib-05102017"))
 
-    # BOOST
-    buildBoost = theConf.getBoolean("BOOST", "Build BOOST library?", "no")
-    if buildBoost:
-      l.append(buildBOOST("boost_1_71_0"))
-
-    # The monster at the end...
-    # This is such a useful library, but it's a big one.
-    l.append(buildGDAL("gdal-2.1.3"))
     self.myBuilders = l
 
   def mrms20(self, theConf):

@@ -1,0 +1,7 @@
+#!/bin/sh
+# So many python versions, so many systems...
+# Grab python in the path and call build.py
+# You can do it by hand too with whatever python you want
+YOURPYTHON=`which python`
+echo "Using python at ${YOURPYTHON}"
+${YOURPYTHON} ./build.py $@

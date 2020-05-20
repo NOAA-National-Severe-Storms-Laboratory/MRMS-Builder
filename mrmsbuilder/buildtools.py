@@ -289,6 +289,7 @@ def checkoutSingle(child, command, password):
                       u'No repository found', # 4 svn failure
                       u' expire',             # 5 Hope this snags expired passwords
                       u'\r\n',                # 6
+                      u'Network connection closed unexpectedly', # 7 NSSL ssh disconnect bug
                       pexpect.EOF ], 
                       timeout=600)
     if i==0:
@@ -334,6 +335,10 @@ def checkoutSingle(child, command, password):
       spamcount = spamcount + 1
       if spamcount > maxspam:
         spamcount = 0
+    elif i == 7:
+       # Stupid ssh disconnect network bug.  Trying to hack around yet again
+       print(">>SVN DISCONNECTED..NSSL NETWORK BUG, RETRY..\n")
+       return 1
 
     else:
       print(child.before)

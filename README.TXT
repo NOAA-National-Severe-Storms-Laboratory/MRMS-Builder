@@ -2,7 +2,7 @@ NSSL Package for building MRMS.
 Robert Toomey May 2017
 
 INSTRUCTIONS: 
-1. Type "./build.py" to run the script
+1. Type "./build" to run the script
 2. Update your shell env to have your proper SVN settings if 
    needed.
 
