@@ -350,6 +350,7 @@ def buildMRMS(scriptroot):
     # Copy the build script itself into that folder...
     # Note: this must update if we add files to root script
     b.chdir(buildroot)
+    b.run("cp "+scriptroot+"/build .");
     b.run("cp "+scriptroot+"/build.py .");
     b.run("cp "+scriptroot+"/default.cfg .");
     b.run("cp -r "+scriptroot+"/mrmsbuilder .");
