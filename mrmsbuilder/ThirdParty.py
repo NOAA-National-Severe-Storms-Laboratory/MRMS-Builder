@@ -431,12 +431,12 @@ class ThirdPartyBuild(BuilderGroup):
 
     # ----------------------------------------------------------
     # Data libraries
-    #l.append(buildHDF5("hdf5-1.8.12"))
-    l.append(buildHDF5("hdf5-1.10.5"))
+    l.append(buildHDF5("hdf5-1.8.12"))      # mrms12
+    l.append(buildNETCDF("netcdf-c-4.7.4"))
+    #l.append(buildHDF5("hdf5-1.10.5"))  # Possible leaking?  
     #l.append(buildHDF5("hdf5-1.12.0")) newest
     #l.append(buildNETCDF("netcdf-c-4.6.1"))
-    l.append(buildNETCDF("netcdf-c-4.7.3"))
-    #l.append(buildNETCDF("netcdf-c-4.7.4"))
+    #l.append(buildNETCDF("netcdf-c-4.7.3"))
     l.append(buildNETCDFPLUS("netcdf-cxx-4.2"))
 
     l.append(buildGDAL("gdal-2.1.3"))
