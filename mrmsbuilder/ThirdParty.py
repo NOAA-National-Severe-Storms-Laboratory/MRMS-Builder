@@ -486,17 +486,6 @@ class ThirdPartyBuild(BuilderGroup):
     # MRMS only free third party
     l.append(buildNETCDFPLUS("netcdf-cxx-4.2")) # Please die, pleeeease
 
-    # ----------------------------------------------------------
-    # MRMS copyrighted
-    #
-    # FIXME: Move to MRMSSevere I think.
-
-    # Krause stuff
-    l.append(buildDualpol("dualpol-08152017"))
-    l.append(buildDualpolQPE("dualpol-QPE-09122017"))
-
-    # We're going to build it inside hmet I think. Or merge into WDSSII
-    #l.append(buildHMRGW2("hmrgw2_lib-05102017"))  Duh build in HMET/lib
     self.myBuilders = l
 
   def checkout(self, target, scriptroot, password, options):

@@ -12,6 +12,27 @@ from .builder import Builder
 from .builder import BuilderGroup
 
 WDSS2 = "WDSS2"
+dualSet2 = 0
+
+# Duplicated in Third.  FIXME: pull out dualpol stuff
+def pathDualpol2(target):
+  """ Set up header ENV for dualpol """
+  global dualSet2
+
+  if dualSet2 == 0:
+    print("******Setting path dualpol")
+    os.environ["ORPGDIR"] = target
+    os.environ["DUALPOLDIR"] = target
+    os.environ["QPE_LIB_ONLY"] = "1"
+    cfg = target+"/lib/pkgconfig"
+    c = os.environ.get("PKG_CONFIG_PATH")
+    if (c is None):
+      os.environ["PKG_CONFIG_PATH"] = cfg
+    else:
+      os.environ["PKG_CONFIG_PATH"] = cfg+":"+c
+    dualSet2 = 1
+  else:
+    print("Not setting path dualpol")
 
 def autoGUICheck():
   """ Passed for 'auto' mode for the GUI flag """
@@ -83,6 +104,39 @@ class buildW2algs(Builder):
     self.runBuildSetup(r)
     self.makeInstall()
 
+class buildDualpol(Builder):
+  """ Build Krause's dualpol within w2algs library """
+  def __init__(self, key, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
+    Builder.__init__(self, key)
+  def build(self, target):
+    # This used a tar in mrms12
+    if self.mrmsVersion == "mrms12":
+      return
+    # Build what's in the src folder
+    dualpol = target+"/"+WDSS2+"/w2algs/kdualpol/dualpol"
+    b.chdir(dualpol)
+    r = self.autogen("./autogen.sh", target)
+    self.runBuildSetup(r)
+    self.makeInstall()
+
+class buildDualpolQPE(Builder):
+  """ Build Krause's QPE dualpol within w2algs library """
+  def __init__(self, key, mrmsVersion):
+    self.mrmsVersion = mrmsVersion
+    Builder.__init__(self, key)
+  def build(self, target):
+    # This used a tar in mrms12
+    if self.mrmsVersion == "mrms12":
+      return
+    # Build what's in the src folder
+    dualpol = target+"/"+WDSS2+"/w2algs/kdualpol/dualpol-QPE"
+    pathDualpol2(target)
+    b.chdir(dualpol)
+    r = self.autogen("./autogen.sh", target)
+    self.runBuildSetup(r)
+    self.makeInstall()
+
 class buildW2ext(Builder):
   """ Build W2ext library """
   def __init__(self, key, mrmsVersion):
@@ -93,14 +147,6 @@ class buildW2ext(Builder):
     w2ext = target+"/"+WDSS2+"/w2ext"
     b.chdir(w2ext)
     r = self.autogen("./autogen.sh", target)
-
-    # Add orpginfr.  This doesn't build after mrms12
-    #r += " --with-orpginfr="
-    #if self.mrmsVersion == "mrms12":
-    #  r += "yes"
-    #else:
-    #  r += "no"
-
     self.runBuildSetup(r)
     self.makeInstall()
 
@@ -152,6 +198,9 @@ class MRMSSevereBuild(BuilderGroup):
     self.mrmsVersion = mrmsVersion
     l = []
     l.append(buildW2("w2", mrmsVersion))
+    # Build krause dualpol
+    l.append(buildDualpol("kdualpol", mrmsVersion))
+    l.append(buildDualpolQPE("kdualpol-QPE", mrmsVersion))
     l.append(buildW2algs("w2algs", mrmsVersion))
     l.append(buildW2ext("w2ext", mrmsVersion))
     self.myW2Tools = buildW2tools("w2tools", mrmsVersion)

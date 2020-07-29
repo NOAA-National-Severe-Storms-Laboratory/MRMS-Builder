@@ -511,17 +511,6 @@ AC_DEFUN([CHECK_OPENSSL],[
     W2_FIND_LIBRARY_AND_APPEND("$OPENSSL_LIB", "$openssl_lib_path", "crypto", OPENSSL_LIBS)
 ])
 
-AC_DEFUN([CHECK_BOOST],[
-  boost_include_path="$prefix $code_search_path $PWD/.. /usr/include/boost141 /usr/include/boost133"
-  boost_lib_path="$prefix $code_search_path $PWD/.. /usr/lib/boost141 /usr/lib/boost133"
-
-  AC_CHECKING(for BOOST thread header files)
-  W2_FIND_HEADER_AND_APPEND("$BOOST_INCLUDE", "$boost_include_path", "boost/thread.hpp", BOOST_CFLAGS)
-
-  W2_CHECKING_LIBRARY(BOOST)
-  W2_FIND_LIBRARY_AND_APPEND("$BOOST_LIB", "$boost_lib_path", "boost_thread-mt", BOOST_LIBS)
-])
-
 AC_DEFUN([CHECK_GL],[
    gl_lib_search_path="/usr/lib64"
    gl_inc_search_path="/usr/include"
@@ -639,34 +628,6 @@ AC_DEFUN([CHECK_GRIB2C],[
    W2_FIND_LIBRARY_AND_APPEND("$GRIB2CDIR", "$grib2c_lib_search_path", "grib2c", GRIB2C_LIBS)
    #W2_FIND_LIBRARY_AND_APPEND("$GRIB2CDIR", "$grib2c_lib_search_path", "g2c_v1.6.0", GRIB2C_LIBS)
    AC_SUBST(GRIB2C_LIBS)
-])
-
-AC_DEFUN([CHECK_DUALPOL],[
-    PKG_CHECK_MODULES([DUALPOL],
-                      [dualpol],
-                      [],
-                      [dnl if we can't find the pkg-config file, use the standard WDSS2 search procedure
-                       dualpol_search_path="$prefix $WDSSIIDIR $HOME/WDSS2/include $HOME/WDSS2/lib"
-                       AC_CHECKING(for dualpol header files)
-                       W2_FIND_HEADER_AND_APPEND("$DUALPOLDIR", "$dualpol_search_path", "dualpol/dualpol.h", DUALPOL_CFLAGS)
-                       W2_CHECKING_LIBRARY(dualpol)
-                       W2_FIND_LIBRARY_AND_APPEND("$DUALPOLDIR", "$dualpol_search_path", "dualpol", DUALPOL_LIBS)])
-    AC_SUBST(DUALPOL_CFLAGS)
-    AC_SUBST(DUALPOL_LIBS)
-])
-
-AC_DEFUN([CHECK_DUALPOL_QPE],[
-    PKG_CHECK_MODULES([DUALPOL_QPE],
-                      [dualpol_QPE],
-                      [],
-                      [dnl if we can't find the pkg-config file, use the standard WDSS2 search procedure
-                       dualpol_search_path="$prefix $WDSSIIDIR $HOME/WDSS2/include $HOME/WDSS2/lib"
-                       AC_CHECKING(for dualpol-QPE header files)
-                       W2_FIND_HEADER_AND_APPEND("$DUALPOLDIR", "$dualpol_search_path", "dualpol-QPE/RadialRainfallRates.h", DUALPOL_CFLAGS)
-                       W2_CHECKING_LIBRARY(dualpol_QPE)
-                       W2_FIND_LIBRARY_AND_APPEND("$DUALPOLDIR", "$dualpol_search_path", "dualpol_QPE", DUALPOL_LIBS)])
-    AC_SUBST(DUALPOL_QPE_CFLAGS)
-    AC_SUBST(DUALPOL_QPE_LIBS)
 ])
 
 AC_DEFUN([CHECK_GDAL],[
@@ -967,16 +928,12 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   CHECK_SDTS_AND_STL
   CHECK_NETCDF
   CHECK_LDUNITS
-  # CHECK_BOOST  -- not used
   CHECK_OPENSSL
-  #CHECK_PSQL -- not used
   CHECK_PYTHONDEV
   CHECK_FAM
   CHECK_COMPRESSION
   CHECK_CODE_OS
   CHECK_GRIB2C
-  CHECK_DUALPOL
-  CHECK_DUALPOL_QPE
 
   # Always link to codedir lib and include FIRST to ensure
   # custom code over system
@@ -985,6 +942,13 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   DISPLAY_3rdPARTY_LIBS="-L$prefix/lib"
   DISPLAY_3rdPARTY_INCLUDES="-I$prefix/include"
 
+  # Dualpol built into codedir first by script
+  # Path is already our standard include/lib
+  DUALPOL_CFLAGS=""
+  DUALPOL_LIBS="-ldualpol -ldualpol_QPE"
+  AC_SUBST(DUALPOL_CFLAGS)
+  AC_SUBST(DUALPOL_LIBS)
+
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${SDTS_LIBS} ${STLPORT_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${UDUNITS_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${NETCDF_LIBS}"
@@ -992,7 +956,6 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
 
   # System libs that can be in other locations
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${BZLIB_LIBS} ${ZLIB_LIBS}"
-#  CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${PSQLLIB}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} -lcurl"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${CODE_OS_LIBS} -lm"
   AC_SUBST(CODE_3rdPARTY_LIBS)
