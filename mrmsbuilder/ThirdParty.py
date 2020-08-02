@@ -232,7 +232,7 @@ class buildBOOST(BuildTar):
   def makeInstall(self):
     """ Do BOOST make and install """
     with open("rebuild.sh", "a") as rebuilder:
-      rebuilder.write("./b2")
+      rebuilder.write("./b2\n")
       rebuilder.write("./b2 install\n")
     b.run("./b2")
     b.run("./b2 install")
@@ -352,15 +352,15 @@ class buildGDAL(BuildTar):
     b.chdir(self.key)
     r = self.autogen("./configure", target)
     r = r + " --bindir="+target+"/bin/GDAL"  # See below
-    r = r + " --without-mysql --without-python --with-jpeg=no --with-gif=no --without-ogr --with-geos=no --with-pg=no --with-pic --with-ogr=no"
+    r = r + " --without-mysql --without-python --with-jpeg=no --with-gif=no --with-geos=no --with-pg=no --with-pic --with-ogr=no"
     r = r + " --with-libtiff=internal"    # Use internal?  RPM might be stock
     r = r + " --with-png="+target         # Use built one
     r = r + " --with-jasper="+target      # Use built one
     r = r + " --with-curl="+target        # Use built one
     r = r + " --with-hdf5="+target        # Use built one
     r = r + " --with-netcdf="+target      # Use built one
+    # FLASH/ANC Carrie's grib2.  Will auto build unless without-grib
     #r = r + " --without-grib"             # conflict with g2clib (Which grib2 reader is better, the library or gdal's?)
-    r = r + " --with-grib"                # FLASH/ANC Carrie's grib2
     r = r + " --without-xml2"             # avoid conflicts - we don't need it
     r = r + " --with-sqlite3=no"          # Disable snagging it 
     self.runBuildSetup(r)

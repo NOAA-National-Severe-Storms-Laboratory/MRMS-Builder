@@ -289,7 +289,7 @@ class Configuration:
       o = self.jobs
     return o
 
-  def getOurDFlags(self):
+  def getOurDFlags(self, mrmsVersion):
     """ Get expire data from configuration file """
     # Current expire is only allowed D flag?
     expireinfo = ""

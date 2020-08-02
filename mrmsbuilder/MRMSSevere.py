@@ -225,24 +225,38 @@ class MRMSSevereBuild(BuilderGroup):
     else:
       self.isExport = theConf.getBoolean("EXPORT", "Is this an exported build (For outside US, turn off encryption)", "no")
 
-    self.ourDFlags = theConf.getOurDFlags()
-    if self.buildPython:
-      self.ourDFlags["PYTHON_DEVEL"] = "2.7"
-    if self.isExport:
-      self.ourDFlags["EXPORT_VERSION"] = "" 
+    self.ourDFlags = theConf.getOurDFlags(self.mrmsVersion)
+    if self.mrmsVersion == "mrms20":
+      aversion = "20" # Can't be a float btw
+    else:
+      aversion = "12" # Can't be a float btw
+      # Older stuff to die off
+      if self.buildPython:
+        self.ourDFlags["PYTHON_DEVEL"] = "2.7"
+      if self.isExport:
+        self.ourDFlags["EXPORT_VERSION"] = "" 
+
+    self.ourDFlags["MRMS_VERSION"] = aversion
 
   def postCheckoutConfig(self, theConf, target):
     """ Configuration stuff for after a successful checkout of code """
     BuilderGroup.postCheckoutConfig(self, theConf, target)
 
-    # Basically we use any -D values from Lak's auth files, overridden
-    # by anything we express in our configure...and all these go to 
-    # cppflags on make command line... 
     w2cppflags = ""
-    keypath = self.getKeyLocation(target, self.isResearch)
-    authFileDFlags = theConf.getAuthFileDItems(keypath)
-    map1 = theConf.mergeConfigLists(self.ourDFlags, authFileDFlags) # 2nd overrides...
-    w2cppflags = theConf.listToDFlags(map1)
+
+    # Old auth tons of flags
+    if self.mrmsVersion == "mrms12":
+      # Basically we use any -D values from Lak's auth files, overridden
+      # by anything we express in our configure...and all these go to 
+      # cppflags on make command line... 
+      keypath = self.getKeyLocation(target, self.isResearch)
+      authFileDFlags = theConf.getAuthFileDItems(keypath)
+      map1 = theConf.mergeConfigLists(self.ourDFlags, authFileDFlags) # 2nd overrides...
+      w2cppflags = theConf.listToDFlags(map1)
+    else: # mrms20 and up
+      # FIXME: Need to handle the w2auth.sxml for research/default (nssl key)
+      w2cppflags = theConf.listToDFlags(self.ourDFlags)
+
     self.setCPPFlags(w2cppflags)
 
   def checkout(self, target, scriptroot, password, options):
