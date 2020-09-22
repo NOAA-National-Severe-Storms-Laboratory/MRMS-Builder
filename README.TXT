@@ -2,6 +2,13 @@ NSSL Package for building MRMS.
 Robert Toomey May 2017
 
 INSTRUCTIONS: 
+0. Python versions are now in flux with different names such as python2, python, python38, etc.
+I'd recommend doing something like
+"python2 build.py"
+or 
+"python2 build.py configs/another.cfg" to choose a non-default configuration
+
+or you can try the default which might fail due to python naming, etc.
 1. Type "./build" to run the script
 2. Update your shell env to have your proper SVN settings if 
    needed.

@@ -1,0 +1,16 @@
+#RAPIO base requirements only
+#More needed for WDSS2/MRMS
+#MAINTAINER Robert.Toomey@noaa.gov
+#
+FROM centos:8
+
+# Install packages
+COPY packages/ /packages
+WORKDIR /packages
+RUN ./rapio_centos8.sh
+
+# Copy prepared builder files to image
+# And build it
+COPY working/ /builder
+WORKDIR /builder
+RUN python2 build.py configs/rapiobase.cfg

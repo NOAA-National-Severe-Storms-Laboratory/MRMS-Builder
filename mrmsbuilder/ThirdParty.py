@@ -478,7 +478,9 @@ class ThirdPartyBuild(BuilderGroup):
     # Data reading libraries
     l.append(buildHDF5("hdf5-1.12.0"))
     l.append(buildNETCDF("netcdf-c-4.7.4"))
-    l.append(buildGDAL("gdal-3.0.4"))
+    buildGDALf = theConf.getBoolean("GDAL", "Build GDAL library? This is required for WDSS2.", "yes")
+    if buildGDALf:
+      l.append(buildGDAL("gdal-3.0.4"))
     # Build afterwards, so grib2.h isn't snagged by gdal's version of this...
     l.append(buildG2CLIB("g2clib-1.6.0")) # Require jasper, pgn, zlib
 

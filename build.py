@@ -1,6 +1,6 @@
 # Robert Toomey March 2017
 
-import sys,os
+import sys,os,traceback
 
 print("Python version %s.%s.%s" % sys.version_info[:3])
 if sys.version_info >=(2,6):
