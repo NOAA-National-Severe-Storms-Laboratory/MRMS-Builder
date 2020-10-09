@@ -11,67 +11,6 @@ dnl
 dnl
 dnl
 
-AC_DEFUN([W2_WITH_QT],
-    [AC_ARG_WITH([qt],
-                 [AC_HELP_STRING([--with-qt],[build Qt GUI apps (default=no)])],
-                 [case "${withval}" in
-                   no) qt=false;;
-                   yes) qt=true;;
-                   *) AC_MSG_ERROR([bad value ${withval} for --with-qt]);;
-                  esac],[qt=false])
-     AM_CONDITIONAL(COND_QT, test x$qt = xtrue)
-    ]
-)
-AC_DEFUN([W2_WITH_WX],
-    [AC_ARG_WITH([wx],
-                 [AC_HELP_STRING([--with-wx],[build wxWidgets GUI apps (default=no)])],
-                 [case "${withval}" in
-                   no) wx=false;;
-                   yes) wx=true;;
-                   *) AC_MSG_ERROR([bad value ${withval} for --with-wx]);;
-                  esac],[wx=false])
-     AM_CONDITIONAL(COND_WX, test x$wx = xtrue)
-    ]
-)
-AC_DEFUN([W2_WITH_GTK],
-    [AC_ARG_WITH([gtk],
-                 [AC_HELP_STRING([--with-gtk],[build Gtk+ GUI apps (default=no)])],
-                 [case "${withval}" in
-                   no) gtk=false;;
-                   yes) gtk=true;;
-                   *) AC_MSG_ERROR([bad value ${withval} for --with-gtk]);;
-                  esac],[gtk=true])
-     AM_CONDITIONAL(COND_GTK, test x$gtk = xtrue)
-    ]
-)
-AC_DEFUN([W2_WITH_PYTHONDEV],
-    [AC_ARG_WITH([pythondev],
-                 [AC_HELP_STRING([--with-pythondev],[build python development (default=no)])],
-                 [case "${withval}" in
-                   no) pythondev=false;;
-                   yes) pythondev=true;;
-                   *) AC_MSG_ERROR([bad value ${withval} for --with-pythondev]);;
-                  esac],[pythondev=false])
-     AM_CONDITIONAL(COND_PYTHONDEV, test x$pythondev = xtrue)
-     dnl if test x"${pythondev}" = xtrue ; then
-     dnl   AC_DEFINE([WITH_PYTHONDEV], [], [w2 python development support])
-     dnl fi
-    ]
-)
-AC_DEFUN([W2_WITH_FAM],
-    [AC_ARG_WITH([fam],
-                 [AC_HELP_STRING([--with-fam],[w2 event notification via inotify (default=yes)])],
-                 [case "${withval}" in
-                   no) fam=false;;
-                   yes) fam=true;;
-                   *) AC_MSG_ERROR([bad value ${withval} for --with-fam]);;
-                  esac],[fam=true])
-     AM_CONDITIONAL(COND_FAM, test x$fam = xtrue)
-     if test x"${fam}" = xtrue ; then
-        AC_DEFINE([WITH_FAM], [], [w2 event notification via FAM])
-     fi
-    ]
-)
 AC_DEFUN([W2_WITH_GDAL],
     [AC_ARG_WITH([gdal],
                  [AC_HELP_STRING([--with-gdal],[build converters that use gdal (default=yes)])],
@@ -87,18 +26,6 @@ AC_DEFUN([W2_WITH_GDAL],
 dnl
 dnl
 dnl
-
-AC_DEFUN([W2_WITH_SDTS],
-  [AC_ARG_WITH([sdts],
-               [AC_HELP_STRING([--with-sdts],[support USGS terrain (default=no)])],
-               [case "${withval}" in
-                no) sdts=false;;
-                yes) sdts=true;;
-                *) AC_MSG_ERROR([bad value ${withval} for --with-sdts]);;
-                esac],[sdts=false])
-   AM_CONDITIONAL(SDTS, test x$sdts = xtrue)
-  ]
-)
 
 AC_DEFUN([W2ALGS_WITH_TDWR],
     [AC_ARG_WITH(tdwr,
@@ -132,27 +59,6 @@ AC_DEFUN([W2ALGS_WITH_DEALIAS],
     ]
 )
 
-AC_DEFUN([W2_ENABLE_HIRES],
-    [AC_ARG_ENABLE(hires,
-        [AC_HELP_STRING([--disable-hires],[turn off hires support (default=yes)])],
-        [if test x"${enableval}" = xyes; then 
-            hires=true
-        elif test x"${enableval}" = xno; then
-            hires=false
-        else
-            AC_MSG_ERROR(bad value ${enableval} for --enable-hires)
-        fi],
-        [hires=false]
-    )
-    AM_CONDITIONAL(HIRES, test x"${hires}" = xtrue)
-    AC_MSG_RESULT("Building hires? ... ${hires}")
-# hires is now in w2ext and is not pre-linked.
-#    if test x"${hires}" = xtrue; then
-#         SOURCELIBS="${SOURCELIBS} -lhires"
-#    fi
-    ]
-)
-
 AC_DEFUN([W2_WITH_RSSD],
     [AC_ARG_WITH(
         [rssd],
@@ -171,68 +77,6 @@ AC_DEFUN([W2_WITH_RSSD],
         AC_DEFINE([WITH_LIBINFR], [], [Use libinfr for RSS Notification])
     fi
     AC_MSG_RESULT("RSSD Implementation: ${rssd}")
-    ]
-)
-
-AC_DEFUN([W2_ENABLE_NEXRAD],
-    [AC_ARG_ENABLE(nexrad,
-        [AC_HELP_STRING([--disable-nexrad],[turn off nexrad support])],
-        [if test x"${enableval}" = xyes; then 
-            nexrad=true
-        elif test x"${enableval}" = xno; then
-            nexrad=false
-        else
-            AC_MSG_ERROR(bad value ${enableval} for --enable-nexrad)
-        fi],
-        [nexrad=true]
-    )
-    AM_CONDITIONAL(NEXRAD, test x"${nexrad}" = xtrue)
-    AC_MSG_RESULT("Building nexrad? ... ${nexrad}")
-# nexrad now an extension library
-#    if test x"${nexrad}" = xtrue; then
-#         SOURCELIBS="${SOURCELIBS} -lw2nexrad"
-#    fi
-    ]
-)
-
-AC_DEFUN([W2_ENABLE_PSQL],
-    [AC_ARG_ENABLE(psql,
-        [AC_HELP_STRING([--enable-psql],[turn on psql support])],
-        [if test x"${enableval}" = xyes; then 
-            psql=true
-        elif test x"${enableval}" = xno; then
-            psql=false
-        else
-            AC_MSG_ERROR(bad value ${enableval} for --enable-psql)
-        fi],
-        [psql=false]
-    )
-    AM_CONDITIONAL(PSQL, test x"${psql}" = xtrue)
-    AC_MSG_RESULT("Building psql? ... ${psql}")
-    if test x"${psql}" = xtrue; then
-         W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", "w2psql", SOURCELIBS)
-    fi
-    ]
-)
-
-AC_DEFUN([W2_ENABLE_WISH],
-    [AC_ARG_ENABLE(wish,
-        [AC_HELP_STRING([--disable-orpg],[turn off wish support])],
-        [if test x"${enableval}" = xyes; then
-            wish=true
-        elif test x"${enableval}" = xno; then
-            wish=false
-        else
-            AC_MSG_ERROR(bad value ${enableval} for --enable-wish)
-        fi],
-        [wish=false]
-    )
-    AM_CONDITIONAL(WISH, test x"${wish}" = xtrue)
-    AC_MSG_RESULT("Building wish? ... ${wish}")
-# wish now in w2ext
-#    if test x"${wish}" = xtrue; then
-#         SOURCELIBS="${SOURCELIBS} -lwish"
-#    fi
     ]
 )
 
@@ -511,39 +355,6 @@ AC_DEFUN([CHECK_OPENSSL],[
     W2_FIND_LIBRARY_AND_APPEND("$OPENSSL_LIB", "$openssl_lib_path", "crypto", OPENSSL_LIBS)
 ])
 
-AC_DEFUN([CHECK_GL],[
-   gl_lib_search_path="/usr/lib64"
-   gl_inc_search_path="/usr/include"
-
-   AC_CHECKING(for GL header files)
-   W2_FIND_HEADER_AND_APPEND("$GLDIR", "$gl_inc_search_path", "GL/gl.h", GL_CFLAGS)
-   AC_SUBST(GL_CFLAGS)
-
-   W2_CHECKING_LIBRARY(GL)
-   W2_FIND_LIBRARY_AND_APPEND("$GLDIR", "$gl_lib_search_path", "opengl32 GL", GL_LIBS)
-   W2_FIND_LIBRARY_AND_APPEND("$GLDIR", "$gl_lib_search_path", "glu32 GLU", GL_LIBS)
-   AC_SUBST(GL_LIBS)
-])
-
-AC_DEFUN([CHECK_FREETYPE],[
-  ft_lib_search_path="/usr/lib64"
-  ft_inc_search_path="/usr/include /usr/include/freetype2"
-
-  AC_CHECKING(for FREETYPE header files)
- 
-  # Usually in /usr/include/freetype2
-  W2_FIND_HEADER_AND_APPEND("$FREETYPEDIR_INC", "$ft_inc_search_path", "freetype/freetype.h", FREETYPE_CFLAGS)
-
-  # Usually in /usr/include
-  W2_FIND_HEADER_AND_APPEND("$FREETYPEDIR_INC", "$ft_inc_search_path", "ft2build.h", FREETYPE_CFLAGS)
-  AC_SUBST(FREETYPE_CFLAGS)
-
-  W2_CHECKING_LIBRARY(freetype)
-  W2_FIND_LIBRARY_AND_APPEND("$FREETYPEDIR", "$ft_lib_search_path", "freetype", FREETYPE_LIBS)
-  AC_SUBST(FREETYPE_LIBS)
-
-])
-
 AC_DEFUN([CHECK_PNG],[
   png_lib_search_path="/usr/lib64"
   png_inc_search_path="/usr/include"
@@ -561,35 +372,6 @@ AC_DEFUN([CHECK_PNG],[
   W2_FIND_LIBRARY_AND_APPEND("$PNGDIR", "$png_lib_search_path", "png", PNG_LIBS)
   AC_SUBST(PNG_LIBS)
 
-])
-
-AC_DEFUN([CHECK_CODE_OS],[
-
-  case "$host_os" in
-
-    *mingw*)
-    AC_DEFINE([GLEW_STATIC], [], [wg builds glew itself and links it static])
-    mingw_search_path="/mingw"
-    W2_FIND_LIBRARY_AND_APPEND($mingw_search_path, "", "shlwapi", CODE_OS_LIBS)
-    W2_FIND_LIBRARY_AND_APPEND($mingw_search_path, "", "ws2_32", CODE_OS_LIBS)
-    W2_FIND_LIBRARY_AND_APPEND($mingw_search_path, "", "imagehlp", CODE_OS_LIBS)
-    CODE_OS_CPPFLAGS="-DCURL_STATICLIB -DGLEW_STATIC"
-    ;;
-
-    *darwin*)
-    AC_DEFINE([OS_X], [], [Are we compiling on OS/X?])
-    CODE_OS_LIBS="$CODE_OS_LIBS -framework Carbon";;
-
-    *)
-    CODE_OS_LIBS="$CODE_OS_LIBS -ldl";;
-
-  esac
-  case "$host_vendor" in
-
-    Sun*|sun*|SUN*)
-    CODE_OS_LIBS="$CODE_OS_LIBS -lposix4";;
-
-  esac
 ])
 
 AC_DEFUN([CHECK_NETCDF],[
@@ -642,128 +424,17 @@ AC_DEFUN([CHECK_GDAL],[
 ])
 
 AC_DEFUN([CHECK_FAM],[
-  W2_WITH_FAM()
-  if test x"$fam" = xtrue
-  then
+  fam_search_path="/usr/include"
 
-    #fam_search_path="$WDSSIIDIR/include /usr/local /usr"
-    fam_search_path="/usr/include"
+  AC_CHECKING(for FAM files)
+  W2_FIND_HEADER_AND_APPEND("$FAMDIR", "$fam_search_path", "sys/inotify.h", FAMINCLUDE)
+  AC_SUBST(FAMINCLUDE)
 
-    AC_CHECKING(for FAM files)
-    W2_FIND_HEADER_AND_APPEND("$FAMDIR", "$fam_search_path", "sys/inotify.h", FAMINCLUDE)
-    AC_SUBST(FAMINCLUDE)
+# inotify is built in glib, so no need to check library
+# W2_CHECKING_LIBRARY(FAM)
+# W2_FIND_LIBRARY_AND_APPEND("$FAMDIR", "$fam_search_path", "fam", FAMLIB)
+# AC_SUBST(FAMLIB)
 
-#    inotify is built in glib, so no need to check library
-#    W2_CHECKING_LIBRARY(FAM)
-#    W2_FIND_LIBRARY_AND_APPEND("$FAMDIR", "$fam_search_path", "fam", FAMLIB)
-#    AC_SUBST(FAMLIB)
-
-   fi
-])
-
-AC_DEFUN([CHECK_WX],[
-  W2_WITH_WX()
-  if test x$wx = xtrue
-  then
-    WX_CC="`wx-config --cc`"
-    WX_CXX="`wx-config --cxx`"
-    WX_CXXFLAGS="`wx-config --cxxflags`"
-    WX_CPPFLAGS="`wx-config --cppflags`"
-    WX_LIBS="`wx-config --libs` `wx-config --gl-libs`"
-  fi
-
-  AC_SUBST(WX_CC)
-  AC_SUBST(WX_CXX)
-  AC_SUBST(WX_CXXFLAGS)
-  AC_SUBST(WX_CPPFLAGS)
-  AC_SUBST(WX_LIBS)
-])
-
-AC_DEFUN([CHECK_GTK],[
-  W2_WITH_GTK()
-  if test x$gtk = xtrue
-  then
-    GLIB_REQUIRED=2.2.0
-    PANGO_REQUIRED=1.2.0
-    GTK_REQUIRED=2.2.0
-    GTKGLEXT_REQUIRED=1.0.6
-
-    # check for the glib/gtk libraries needed by wg2
-    PKG_CHECK_MODULES(GLIB, glib-2.0 >= $GLIB_REQUIRED \
-                            gthread-2.0 >= $GLIB_REQUIRED \
-                            gobject-2.0 >= $GLIB_REQUIRED)
-    PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $GTK_REQUIRED)
-    PKG_CHECK_MODULES(GTKGLEXT, gtkglext-1.0 >= $GTKGLEXT_REQUIRED,,AC_MSG_WARN([gtkglext not found; wgtk will not build]))
-  else
-    echo "GTK checking skipped ... --with-gtk not set."
-  fi
-
-  AC_SUBST(GLIB_CFLAGS)
-  AC_SUBST(GLIB_LIBS)
-  AC_SUBST(GTK_CFLAGS)
-  AC_SUBST(GTK_LIBS)
-  AC_SUBST(GTKGLEXT_CFLAGS)
-  AC_SUBST(GTKGLEXT_LIBS)
-])
-
-AC_DEFUN([CHECK_PYTHONDEV],[
-  W2_WITH_PYTHONDEV()
-  if test x$pythondev = xtrue
-  then
-
-    # Start with the redhat 7 stock python-devel
-    python_search_path="/usr/include/python2.7/"
-
-    AC_CHECKING(for python development header files)
-    W2_FIND_HEADER_AND_APPEND("$PYTHONDEVDIR", "$python_search_path", "Python.h", PYTHONDEVINCLUDE)
-    AC_SUBST(PYTHONDEVINCLUDE)
-  else
-    echo "Python development checking skipped ... --with-pythondev not set."
-  fi
-
-])
-
-AC_DEFUN([CHECK_QT],[
-  W2_WITH_QT()
-  if test x$qt = xtrue
-  then
-
-    ##### Qt
-
-    # We need strict QTDIR following for auto building
-    if test x"${QTDIR}" != x; then
-
-      # Check for include and libs in QTDIR, first shared, than static
-      AC_CHECKING("for --- Qt files --- QTDIR is hard set in environment to ${QTDIR} ---")
-      AC_CHECK_FILE($QTDIR/include/qdom.h, QTINCLUDE="-I$QTDIR/include")
-      AC_CHECK_FILE($QTDIR/lib/libqt.so, QTLIB="$QTDIR/lib/libqt.so")
-      if test x"${QTLIB}" = x; then
-        # Static qt needs to link explicitly to certain X libraries or it fails
-        AC_CHECK_FILE($QTDIR/lib/libqt.a, QTLIB="$QTDIR/lib/libqt.a";SOURCELIBS="${SOURCELIBS} -L/usr/X11R6/lib -lXft")
-      fi
-      if test x"${QTINCLUDE}" = x; then
-       AC_MSG_ERROR( no include/qdom.h in ${QTDIR})
-      fi
-      if test x"${QTLIB}" = x; then
-       AC_MSG_ERROR( no lib/libqt.* in ${QTDIR})
-      fi
-    else
-      qt_search_path="/usr /usr/include/qt /usr/lib/qt3 /usr/lib/qt2 /usr/local/qt /usr/local/qt-2.2.2 /server/qt-2.2.3"
-      AC_CHECKING(for Qt header files)
-      W2_FIND_HEADER_AND_APPEND("$QTDIR", "$qt_search_path", "qdom.h", QTINCLUDE)
-      W2_CHECKING_LIBRARY(qt)
-      W2_FIND_LIBRARY_AND_APPEND("$QTDIR", "$qt_search_path", "qt", QTLIB)
-    fi
-  
-    xpm_search_path="/usr/openwin /usr/X11R6 /usr $PWD/.."
-    AC_CHECKING(for XPM header files)
-    W2_FIND_HEADER_AND_APPEND("$XPMDIR", "$xpm_search_path", "X11/xpm.h", XPM_CFLAGS)
-    W2_CHECKING_LIBRARY(Xpm)
-    W2_FIND_LIBRARY_AND_APPEND("$XPMDIR", "$xpm_search_path", "Xpm", XPM_LIBS)
-  fi
-
-  AC_SUBST(QTINCLUDE)
-  AC_SUBST(QTLIB)
 ])
 
 AC_DEFUN([CHECK_COMPRESSION],[
@@ -791,38 +462,6 @@ AC_DEFUN([CHECK_COMPRESSION],[
     W2_FIND_LIBRARY_AND_APPEND("$BZDIR", "$bz_lib_search_path", "bz2", BZLIB_LIBS)
 ])
 
-AC_DEFUN([CHECK_SDTS_AND_STL],[
-
-  ### SDTS
-
-  if test x"$sdts" = xtrue; then
-
-    sdts_search_path="/usr/local /usr $PWD/.."
-
-    AC_CHECKING(for SDTS header files)
-    W2_FIND_HEADER_AND_APPEND("$SDTSDIR", "$sdts_search_path", "sdts++/io/sio_Reader.h", SDTS_CFLAGS)
-
-    W2_CHECKING_LIBRARY(SDTS)
-    W2_FIND_LIBRARY_AND_APPEND("$SDTSDIR", "$sdts_search_path", "sdts", SDTS_LIBS)
-    W2_FIND_LIBRARY_AND_APPEND("$SDTSDIR", "$sdts_search_path", "sysutils", SDTS_LIBS)
-
-  fi
-
-  case "$host" in
-
-    *irix*)
-    stlport_inc_search_path="$PWD/../STLport/stlport"
-    stlport_lib_search_path="$PWD/../STLport"
-
-    AC_CHECKING(for STLPORT header files)
-    W2_FIND_HEADER_AND_APPEND("$STLPORTDIR", "$stlport_inc_search_path", "stl_user_config.h", STLPORT_CFLAGS)
- 
-    W2_CHECKING_LIBRARY(STLPORT)
-    W2_FIND_LIBRARY_AND_APPEND("$STLPORTDIR", "$stlport_search_path", "stlport_gcc", STLPORT_LIBS)
-
-  esac
-])
-
 AC_DEFUN([CHECK_EXTRAS],[
     if test x"${tdwr}" = xtrue; then
         echo "Building TDWRIngest? ... yes";
@@ -837,7 +476,6 @@ AC_DEFUN([W2_CONFIGURE_W2],[
   W2_CONFIGURE_SHARED
 
   W2_WITH_RSSD
-  W2_ENABLE_NEXRAD
 
 ])
 
@@ -845,29 +483,6 @@ AC_DEFUN([W2_CONFIGURE_W2EXT],[
 
   #### Configure only stuff needed for W2EXT directory
   W2_CONFIGURE_SHARED
-
-  W2_ENABLE_HIRES
-  W2_ENABLE_WISH
-  W2_ENABLE_NEXRAD
-])
-
-AC_DEFUN([W2_CONFIGURE_WG],[
-  #### Libraries only needed by the display
-  #
-  # Ok, if no GTK asked for, skip all the display check stuff
-  CHECK_GTK
-  if test x$gtk = xtrue; then
-    CHECK_QT
-    CHECK_WX
-    CHECK_GL
-    CHECK_FREETYPE
-
-    DISPLAY_3rdPARTY_LIBS="${DISPLAY_3rdPARTY_LIBS} ${QTLIB} ${FREETYPE_LIBS} ${GL_LIBS}"
-    DISPLAY_3rdPARTY_INCLUDES="${DISPLAY_3rdPARTY_INCLUDES} ${GL_CFLAGS} ${XPM_CFLAGS} ${QTINCLUDE} ${FREETYPE_CFLAGS}"
-  fi
-
-  AC_SUBST(DISPLAY_3rdPARTY_LIBS)
-  AC_SUBST(DISPLAY_3rdPARTY_INCLUDES)
 ])
 
 AC_DEFUN([W2_CONFIGURE_W2CONVERTERS],[
@@ -885,7 +500,6 @@ AC_DEFUN([W2_CONFIGURE_W2TOOLS],[
   #### Configure only stuff needed for W2TOOLS directory
   W2_CONFIGURE_SHARED
   W2_CONFIGURE_W2CONVERTERS
-  W2_CONFIGURE_WG
 
 ])
 
@@ -893,15 +507,6 @@ AC_DEFUN([W2_CONFIGURE_W2ALGS],[
 
   #### Configure only stuff needed for W2ALGS directory
   W2_CONFIGURE_SHARED
-
-  #### Lightning still has a gui and needs QT
-  #### Libraries only needed by the display
-  #CHECK_QT
-  #DISPLAY_3rdPARTY_LIBS="${DISPLAY_3rdPARTY_LIBS} ${QTLIB}"
-  #DISPLAY_3rdPARTY_INCLUDES="${DISPLAY_3rdPARTY_INCLUDES} ${QTINCLUDE}"
-  #AC_SUBST(DISPLAY_3rdPARTY_LIBS)
-  #AC_SUBST(DISPLAY_3rdPARTY_INCLUDES)
-  #### CHECK_G2C
 
   W2ALGS_WITH_TDWR
   W2ALGS_WITH_DEALIAS
@@ -914,27 +519,22 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   AC_REQUIRE([AC_CANONICAL_HOST])
 
   #### Stuff shared by W2, W2Algs, W2Tools
-  W2_ENABLE_PSQL
   W2_WITH_RSSD
-  W2_WITH_SDTS
-  W2_WITH_QT
-  W2_WITH_WX
-  W2_WITH_GTK
 
   # SOURCELIBS has been set by now
   AC_SUBST(SOURCELIBS)
 
   CHECK_EXTRAS
-  CHECK_SDTS_AND_STL
   CHECK_NETCDF
   CHECK_LDUNITS
   CHECK_OPENSSL
-  CHECK_PYTHONDEV
   CHECK_FAM
   CHECK_COMPRESSION
-  CHECK_CODE_OS
   CHECK_GRIB2C
 
+  # Always link to codedir lib and include FIRST to ensure
+  # custom code over system
+  CODE_3rdPARTY_LIBS="-L$prefix/lib"
   # Always link to codedir lib and include FIRST to ensure
   # custom code over system
   CODE_3rdPARTY_LIBS="-L$prefix/lib"
@@ -949,7 +549,6 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   AC_SUBST(DUALPOL_CFLAGS)
   AC_SUBST(DUALPOL_LIBS)
 
-  CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${SDTS_LIBS} ${STLPORT_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${UDUNITS_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${NETCDF_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${GRIB2C_LIBS}"
@@ -957,16 +556,14 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   # System libs that can be in other locations
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${BZLIB_LIBS} ${ZLIB_LIBS}"
   CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} -lcurl"
-  CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} ${CODE_OS_LIBS} -lm"
+  CODE_3rdPARTY_LIBS="${CODE_3rdPARTY_LIBS} -lm"
   AC_SUBST(CODE_3rdPARTY_LIBS)
 
 
-  CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${SDTS_CFLAGS} ${STLPORT_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${UDUNITS_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${NETCDF_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${GRIB2C_CFLAGS}"
   CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${ZLIB_CFLAGS} ${BZLIB_CFLAGS}"
-  CODE_3rdPARTY_INCLUDES="${CODE_3rdPARTY_INCLUDES} ${CODE_OS_CPPFLAGS}"
   AC_SUBST(CODE_3rdPARTY_INCLUDES)
 
   # Ok..make sure we hard link to the third party folder when making binaries.
@@ -997,10 +594,9 @@ AC_DEFUN([CODE_CONFIGURE],[
   for tmplib in w2netcdf w2algs util_alg w2gis c_datatype ; do
     W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", $tmplib, CODELIBRARIES)
   done
-  W2_WITH_FAM()
-  if test x"$fam" = xtrue; then
-    W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", fam_notifier, CODELIBRARIES)
-  fi
+  # gribw2 needs fam always
+  AC_CHECKING(for FAM and FAM_NOTIFIER)
+  W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", fam_notifier, CODELIBRARIES)
   for tmplib in data_object wdssii ; do
     W2_FIND_LIBRARY_AND_APPEND("$prefix", "$code_search_path", $tmplib, CODELIBRARIES)
   done

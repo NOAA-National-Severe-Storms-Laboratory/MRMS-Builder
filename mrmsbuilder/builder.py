@@ -89,6 +89,37 @@ class BuilderGroup:
   """ Build a logical group of packages, such as hydro or third party or severe """
   def __init__(self):
     self.myBuilders = []
+    self.ourDFlags = {}
+  def mrmsVersion(self, theConf, version, buildPython, isExport):
+    self.ourDFlags = theConf.getOurDFlags(version)
+    if version == "mrms20":
+      aversion = "20" # Can't be a float btw
+    else:
+      aversion = "12" # Can't be a float btw
+      # Older stuff to die off
+      if buildPython:
+        self.ourDFlags["PYTHON_DEVEL"] = "2.7"
+      if isExport:
+        self.ourDFlags["EXPORT_VERSION"] = "" 
+    self.ourDFlags["MRMS_VERSION"] = aversion
+  def mrmsFlags(self, theConf, target, version, isResearch):
+    w2cppflags = ""
+
+    # Old auth tons of flags
+    if version == "mrms12":
+      # Basically we use any -D values from Lak's auth files, overridden
+      # by anything we express in our configure...and all these go to 
+      # cppflags on make command line... 
+      keypath = self.getKeyLocation(target, isResearch)
+      authFileDFlags = theConf.getAuthFileDItems(keypath)
+      map1 = theConf.mergeConfigLists(self.ourDFlags, authFileDFlags) # 2nd overrides...
+      w2cppflags = theConf.listToDFlags(map1)
+    else: # mrms20 and up
+      # FIXME: Need to handle the w2auth.sxml for research/default (nssl key)
+      w2cppflags = theConf.listToDFlags(self.ourDFlags)
+    self.setCPPFlags(w2cppflags)
+
+
   def preCheckoutConfig(self, theConf):
     """ Configuration questions just for this builder """
     # Default to -j for all builds for speed
@@ -138,3 +169,11 @@ class BuilderGroup:
     pass
   def build(self, target):
     pass
+  def getKeyLocation(self, target, isResearch):
+    """ Return path to a built in authentication key """
+    path = target+"/WDSS2/w2/w2config/auth/"
+    if isResearch:
+      path += "research/key"
+    else:
+      path += "default/key"
+    return path

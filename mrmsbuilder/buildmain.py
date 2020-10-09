@@ -19,6 +19,8 @@ from . import config as config
 from .ThirdParty import ThirdPartyBuild
 from .MRMSSevere import MRMSSevereBuild
 from .MRMSHydro import MRMSHydroBuild
+from .WG import WGBuild
+from .WG import autoGUICheck as autoGUICheck
 from .WG2 import WG2Build
 from .WG2 import autoGUI2Check as autoGUI2Check
 from .RAPIO import RAPIOBuild
@@ -164,6 +166,7 @@ def doGetBuilders(theConf):
   buildThird = theConf.getBoolean("THIRDPARTY", "Build all third party packages?", "yes")
   buildWDSS2 = theConf.getBoolean("WDSS2", "Build WDSS2 packages?", "yes")
   buildHydro = theConf.getBoolean("HYDRO", "Build Hydro packages after WDSS2?", "yes")
+  buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui? (requires openGL libraries installed)", "yes", autoGUICheck)
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
   buildRAPIO = theConf.getBoolean("RAPIO", "Build RAPIO library?", "no")
 
@@ -172,6 +175,8 @@ def doGetBuilders(theConf):
   mrmshydro = addBuilder(bl, MRMSHydroBuild(theConf, mrmsVersion), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
   rapiobuilder = addBuilder(bl, RAPIOBuild(), buildRAPIO)
+  # Build last since it's a RPM pig and can fail.  This way we can just rebuild it
+  wgbuilder = addBuilder(bl, WGBuild(theConf, mrmsVersion), buildGUI)
   return bl
 
 def doPreCheckoutConfig(aBuilderList, theConf):
