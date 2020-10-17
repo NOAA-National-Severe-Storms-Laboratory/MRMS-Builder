@@ -30,5 +30,6 @@ cp -r ../mrmsbuilder working/mrmsbuilder
 cp -r ../third working/third
 cp ../build.py working/build.py 
 cp -r configs working/configs
+cp -r data working/data
 
 podman build --tag $1 -f $2

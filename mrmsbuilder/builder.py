@@ -5,6 +5,9 @@
 # until I figure where best to put it
 from . import buildtools as b
 
+# System imports
+import os,sys
+
 class Builder:
   """ Build a individual package such as 'netcdf' """
   def __init__(self, key):
@@ -118,7 +121,15 @@ class BuilderGroup:
       # FIXME: Need to handle the w2auth.sxml for research/default (nssl key)
       w2cppflags = theConf.listToDFlags(self.ourDFlags)
     self.setCPPFlags(w2cppflags)
-
+  def setupWDSS2M4(self, target, WDSS2):
+    """ Set up the M4 macros """
+    # Use our new m4 to static link third
+    b.runOptional("rm "+target+"/"+WDSS2+"/config/w2.m4")
+    relativePath = os.path.dirname(os.path.realpath(__file__))
+    if self.mrmsVersion == "mrms12":
+      b.run("cp "+relativePath+"/newm4.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
+    else:
+      b.run("cp "+relativePath+"/newm4-mrms20.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
 
   def preCheckoutConfig(self, theConf):
     """ Configuration questions just for this builder """

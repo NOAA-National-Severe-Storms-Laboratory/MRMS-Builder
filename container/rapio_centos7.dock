@@ -13,4 +13,10 @@ RUN ./rapio_centos7.sh
 # And build it
 COPY working/ /builder
 WORKDIR /builder
-RUN python build.py configs/rapiobase.cfg
+RUN python build.py configs/rapiobase.cfg &&\
+    rm -rf /BUILD/Third &&\
+    rm -rf /BUILD/RAPIO
+
+# Make the binaries the default
+ENV PATH="/BUILD/bin:${PATH}"
+WORKDIR /BUILD/bin

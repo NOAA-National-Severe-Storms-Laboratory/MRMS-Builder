@@ -1,13 +1,11 @@
-#RAPIO base requirements only
-#More needed for WDSS2/MRMS
-#MAINTAINER Robert.Toomey@noaa.gov
-#
-FROM centos:7
+# Toomey Try chaining containers
+# Adding to base/third party built container
+FROM localhost/rapio8
 
 # Install packages
 COPY packages/ /packages
 WORKDIR /packages
-RUN ./mrms_full_centos7.sh
+RUN ./mrms_add_algs_centos8.sh
 
 # Copy prepared builder files to image
 # And build it
@@ -18,10 +16,8 @@ WORKDIR /builder
 # This cuts down on the 9 GB image (full giant source build)
 # Kinda wanna strip bin as well..another 450 mb or so
 # However if using in production we want debugging
-RUN python build.py configs/mrms20_full.cfg &&\
+RUN python2 build.py configs/mrms20_add_algs.cfg &&\
     cp -r /BUILD/WDSS2/w2/w2config/ /root/w2config &&\
-    rm -rf /BUILD/Third &&\
-    rm -rf /BUILD/RAPIO &&\
     rm -rf /BUILD/WDSS2 &&\
     rm -rf /BUILD/HMET
 

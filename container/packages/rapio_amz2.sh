@@ -28,3 +28,8 @@ yum install unzip xz-devel bzip2-devel -y
 # Development libraries
 # expat-devel (udunits requirement)
 yum install expat-devel libpng-devel openssl-devel -y
+
+# Stuff RAPIO doesn't really need, but the Third package does 
+# If we break it up base, rapio, algs, gui it should be here
+# (gdal)
+yum install libjpeg-turbo-devel -y

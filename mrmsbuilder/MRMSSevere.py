@@ -188,13 +188,8 @@ class MRMSSevereBuild(BuilderGroup):
     """ Build WDSS2 (MRMS_Severe) """
     print("\nBuilding WDSS2 (MRMS_Severe) libraries...")
 
-    # Use our new m4 to static link third
-    b.runOptional("rm "+target+"/"+WDSS2+"/config/w2.m4")
-    relativePath = os.path.dirname(os.path.realpath(__file__))
-    if self.mrmsVersion == "mrms12":
-      b.run("cp "+relativePath+"/newm4.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
-    else:
-      b.run("cp "+relativePath+"/newm4-mrms20.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
+    # Copy m4 into the location needed
+    BuilderGroup.setupWDSS2M4(self, target, WDSS2)
 
     # Build all builders...
     for build in self.myBuilders:

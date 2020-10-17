@@ -170,7 +170,11 @@ def doGetBuilders(theConf):
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
   buildRAPIO = theConf.getBoolean("RAPIO", "Build RAPIO library?", "no")
 
-  thirdparty = addBuilder(bl, ThirdPartyBuild(theConf, mrmsVersion), buildThird | buildWDSS2 | buildHydro)
+  # Debate letting people control individual flags, because builds are chained and
+  # when they break they get confused.
+  #thirdparty = addBuilder(bl, ThirdPartyBuild(theConf, mrmsVersion), buildThird | buildWDSS2 | buildHydro)
+  thirdparty = addBuilder(bl, ThirdPartyBuild(theConf, mrmsVersion), buildThird)
+
   mrmssevere = addBuilder(bl, MRMSSevereBuild(theConf, mrmsVersion), buildWDSS2 | buildHydro)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(theConf, mrmsVersion), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)

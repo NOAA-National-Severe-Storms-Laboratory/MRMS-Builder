@@ -1,0 +1,24 @@
+# Build single radar setup for running the algorithms for one radar such as KTLX
+# in the realtime systems.
+#
+# Toomey
+# Currently building off a full build 7 image.  Probably should
+# start 'chaining' them at some point.  Though this can make
+# them bigger and we want them small
+FROM localhost/mrms_c7_full
+
+# Install packages.  LDM wants libxml2 and netstat?  mlocate is nice here
+# psmisc needed by w2alg to display status
+RUN yum install libxml2-devel net-tools psmisc mlocate -y
+
+# Build/install LDM stock
+COPY /working/data/ldm-6.13.11.tar.gz /root/ldm.tar.gz
+WORKDIR /root
+RUN tar xvfz ldm.tar.gz &&\
+    cd ldm-6.13.11 &&\
+    ./configure --prefix=/BUILD &&\
+    make install
+# FIXME: Cleanup ldm build folder/etc from root
+
+WORKDIR /BUILD/bin
+

@@ -86,6 +86,10 @@ class WGBuild(BuilderGroup):
 
   def build(self, target):
     """ Build WG """
+    # Copy m4 into the location needed
+    # This might be a fresh checkout if stacking containers
+    BuilderGroup.setupWDSS2M4(self, target, WDSS2)
+
     # Build all builders...
     for build in self.myBuilders:
       build.build(target)
