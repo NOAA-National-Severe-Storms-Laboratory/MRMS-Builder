@@ -57,14 +57,22 @@ class buildW2(Builder):
 
 class buildW2algs(Builder):
   """ Build W2algs library """
-  def __init__(self, key, mrmsVersion):
+  def __init__(self, key, mrmsVersion, r):
     self.mrmsVersion = mrmsVersion
+    if self.mrmsVersion == "mrms12":
+      self.rapio = False
+    else:
+      self.rapio = r
     Builder.__init__(self, key)
 
   def build(self, target):
     w2algs = target+"/"+WDSS2+"/w2algs"
     b.chdir(w2algs)
     r = self.autogen("./autogen.sh", target)
+
+    # Conditional RAPIO algs
+    if self.rapio:
+      r += " --with-rapio"
 
     # Add orpginfr.  This doesn't build after mrms12
     #r += " --with-orpginfr="
@@ -143,16 +151,20 @@ class buildW2tools(Builder):
 
 class MRMSSevereBuild(BuilderGroup):
   """ Build all of MRMS Severe (WDSS2) """
-  def __init__(self, theConf, mrmsVersion):
+  def __init__(self, theConf, mrmsVersion, r):
     """ Get the builders from this module """
     self.mrmsVersion = mrmsVersion
     self.ourDFlags = {}
+    if self.mrmsVersion == "mrms12":
+      self.rapio = False
+    else:
+      self.rapio = r
     l = []
     l.append(buildW2("w2", mrmsVersion))
     # Build krause dualpol
     l.append(buildDualpol("kdualpol", mrmsVersion))
     l.append(buildDualpolQPE("kdualpol-QPE", mrmsVersion))
-    l.append(buildW2algs("w2algs", mrmsVersion))
+    l.append(buildW2algs("w2algs", mrmsVersion, self.rapio))
     l.append(buildW2ext("w2ext", mrmsVersion))
     self.myW2Tools = buildW2tools("w2tools", mrmsVersion)
     l.append(self.myW2Tools)

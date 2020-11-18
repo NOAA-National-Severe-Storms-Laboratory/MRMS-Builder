@@ -15,10 +15,18 @@ HYDRO = "HMET"
 
 class buildHydro(Builder):
   """ Build Hydro library """
+  def __init__(self, key, r):
+    self.rapio = r
+    Builder.__init__(self, key)
+
+  """ Build Hydro library """
   def build(self, target):
     hbase = target+"/"+HYDRO+"/"
     b.chdir(hbase)
-    self.runBuildSetup("./autogen.sh --prefix="+target+" --enable-shared ")
+    r = "./autogen.sh --prefix="+target+" --enable-shared "
+    if self.rapio:
+      r += "--with-rapio "
+    self.runBuildSetup(r)
     self.makeInstall()
 
 class buildFortran(Builder):
@@ -44,11 +52,15 @@ class buildFortran(Builder):
 
 class MRMSHydroBuild(BuilderGroup):
   """ Build all of MRMS Hydro """
-  def __init__(self, theConf, mrmsVersion):
+  def __init__(self, theConf, mrmsVersion, r):
     """ Get the builders from this module """
     self.mrmsVersion = mrmsVersion
+    if self.mrmsVersion == "mrms12":
+      self.rapio = False
+    else:
+      self.rapio = r
     l = []
-    l.append(buildHydro("hydro"))
+    l.append(buildHydro("hydro", self.rapio))
     buildlittle = theConf.getBoolean("HYDROFORTRAN", "Build HYDRO fortran apps?", "no")
     if buildlittle:
       l.append(buildFortran("hydrofortran"))

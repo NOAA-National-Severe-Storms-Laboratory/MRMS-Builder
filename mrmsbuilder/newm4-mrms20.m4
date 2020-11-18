@@ -11,6 +11,18 @@ dnl
 dnl
 dnl
 
+AC_DEFUN([MRMS_WITH_RAPIO],
+    [AC_ARG_WITH([rapio],
+                 [AC_HELP_STRING([--with-rapio],[build code that uses RAPIO (default=no)])],
+                 [case "${withval}" in
+                   no) rapio=false;;
+                   yes) rapio=true;;
+                   *) AC_MSG_ERROR([bad value ${withval} for --with-rapio]);;
+                  esac],[rapio=true])
+     AM_CONDITIONAL(RAPIO, test x$rapio = xtrue)
+    ]
+)
+
 AC_DEFUN([W2_WITH_GDAL],
     [AC_ARG_WITH([gdal],
                  [AC_HELP_STRING([--with-gdal],[build converters that use gdal (default=yes)])],
@@ -77,23 +89,6 @@ AC_DEFUN([W2_WITH_RSSD],
         AC_DEFINE([WITH_LIBINFR], [], [Use libinfr for RSS Notification])
     fi
     AC_MSG_RESULT("RSSD Implementation: ${rssd}")
-    ]
-)
-
-AC_DEFUN([W2_ENABLE_NETSSAP],
-    [AC_ARG_ENABLE(netssap,
-        [AC_HELP_STRING([--disable-netssap],[turn off netssap support])],
-        [if test x"${enableval}" = xyes; then
-            netssap=true
-        elif test x"${enableval}" = xno; then
-            netssap=false
-        else
-            AC_MSG_ERROR(bad value ${enableval} for --enable-netssap)
-        fi],
-        [netssap=true]
-    )
-    AM_CONDITIONAL(NETSSAP, test x"${netssap}" = xtrue)
-    AC_MSG_RESULT("Building netssap? ... ${netssap}")
     ]
 )
 
@@ -412,6 +407,17 @@ AC_DEFUN([CHECK_GRIB2C],[
    AC_SUBST(GRIB2C_LIBS)
 ])
 
+AC_DEFUN([CHECK_RAPIO],[
+  MRMS_WITH_RAPIO()
+  if test x"$rapio" = xtrue
+  then
+    RAPIO_CFLAGS="-I${prefix}/include/rapiobase -std=c++11 -ftemplate-depth-50 -finline-functions -DBOOST_LOG_DYN_LINK"
+    RAPIO_LIBS="-I{prefix}/lib -lboost_system -lrapio -lcurl -lnetcdf -ludunits2 -lbz2 -ljasper -lpng -lboost_log -lboost_log_setup -lboost_thread -lpthread -lboost_filesystem -lboost_serialization -lboost_iostreams"
+  fi
+  AC_SUBST(RAPIO_CFLAGS)
+  AC_SUBST(RAPIO_LIBS)
+])
+
 AC_DEFUN([CHECK_GDAL],[
   W2_WITH_GDAL()
   if test x"$gdal" = xtrue
@@ -445,21 +451,31 @@ AC_DEFUN([CHECK_COMPRESSION],[
     z_inc_search_path="$prefix/include"
     z_lib_search_path="$prefix/lib"
 
-    # User system bzip...
-    bz_inc_search_path="/usr/include"
-    bz_lib_search_path="/usr/lib64"
-
     AC_CHECKING(for zlib header files)
     W2_FIND_HEADER_AND_APPEND("$ZDIR", "$z_inc_search_path", "zlib.h", ZLIB_CFLAGS)
 
     W2_CHECKING_LIBRARY(zlib)
     W2_FIND_LIBRARY_AND_APPEND("$ZDIR", "$z_lib_search_path", "z", ZLIB_LIBS)
 
+    # User system bzip...
+    bz_inc_search_path="/usr/include"
+    bz_lib_search_path="/usr/lib64"
+
     AC_CHECKING(for bzip header files)
     W2_FIND_HEADER_AND_APPEND("$BZDIR", "$bz_inc_search_path", "bzlib.h", BZLIB_CFLAGS)
 
     W2_CHECKING_LIBRARY(bzlib)
     W2_FIND_LIBRARY_AND_APPEND("$BZDIR", "$bz_lib_search_path", "bz2", BZLIB_LIBS)
+
+    # User system lzma... (RAPIO supports this compression type though boost) 
+    lzma_inc_search_path="/usr/include"
+    lzma_lib_search_path="/usr/lib64"
+
+    AC_CHECKING(for lzma header from the xz-devel rpm)
+    W2_FIND_HEADER_AND_APPEND("$LZMADIR", "$lzma_inc_search_path", "lzma.h", LZMALIB_CFLAGS)
+
+    W2_CHECKING_LIBRARY(lzmalib)
+    W2_FIND_LIBRARY_AND_APPEND("$LZMADIR", "$lzma_lib_search_path", "lzma", LZMALIB_LIBS)
 ])
 
 AC_DEFUN([CHECK_EXTRAS],[
@@ -510,7 +526,6 @@ AC_DEFUN([W2_CONFIGURE_W2ALGS],[
 
   W2ALGS_WITH_TDWR
   W2ALGS_WITH_DEALIAS
-  W2_ENABLE_NETSSAP
 
 ])
 
@@ -531,6 +546,7 @@ AC_DEFUN([W2_CONFIGURE_SHARED],[
   CHECK_FAM
   CHECK_COMPRESSION
   CHECK_GRIB2C
+  CHECK_RAPIO
 
   # Always link to codedir lib and include FIRST to ensure
   # custom code over system
