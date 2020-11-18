@@ -130,6 +130,7 @@ class BuilderGroup:
       b.run("cp "+relativePath+"/newm4.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
     else:
       b.run("cp "+relativePath+"/newm4-mrms20.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
+    return relativePath
 
   def preCheckoutConfig(self, theConf):
     """ Configuration questions just for this builder """

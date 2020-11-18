@@ -189,7 +189,7 @@ class MRMSSevereBuild(BuilderGroup):
     print("\nBuilding WDSS2 (MRMS_Severe) libraries...")
 
     # Copy m4 into the location needed
-    BuilderGroup.setupWDSS2M4(self, target, WDSS2)
+    relativePath = BuilderGroup.setupWDSS2M4(self, target, WDSS2)
 
     # Build all builders...
     for build in self.myBuilders:
