@@ -229,6 +229,10 @@ class buildBOOST(BuildTar):
   def checkRequirements(self):
     req = True
     return req
+  def copy(self, target):
+    tarfile = self.key+".tar.gz"
+    b.run("cat "+self.key+"-* > "+tarfile)
+    b.run("cp "+tarfile+" "+target)
   def makeInstall(self):
     """ Do BOOST make and install """
     with open("rebuild.sh", "a") as rebuilder:
