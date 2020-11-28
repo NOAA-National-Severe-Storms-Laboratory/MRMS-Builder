@@ -7,8 +7,9 @@ import errno
 import signal
 from contextlib import contextmanager
 
-import ptyprocess
-from ptyprocess.ptyprocess import use_native_pty_fork
+# Changed to explicit..'should' work on 3 and 2
+from .ptyprocess import ptyprocess
+from .ptyprocess.ptyprocess import use_native_pty_fork
 
 from .exceptions import ExceptionPexpect, EOF, TIMEOUT
 from .spawnbase import SpawnBase

@@ -71,7 +71,9 @@ class buildW2algs(Builder):
     r = self.autogen("./autogen.sh", target)
 
     # Conditional RAPIO algs
-    if self.rapio:
+    # Since we can layer builds, check if folder there
+    # because we might have built in a previous run
+    if os.path.isdir(target+"/RAPIO"):
       r += " --with-rapio"
 
     # Add orpginfr.  This doesn't build after mrms12

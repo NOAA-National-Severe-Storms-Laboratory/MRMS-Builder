@@ -231,7 +231,7 @@ class buildBOOST(BuildTar):
     return req
   def copy(self, target):
     tarfile = self.key+".tar.gz"
-    b.run("cat "+self.key+"-* > "+tarfile)
+    b.run("cat "+tarfile+"-* > "+tarfile)
     b.run("cp "+tarfile+" "+target)
   def makeInstall(self):
     """ Do BOOST make and install """

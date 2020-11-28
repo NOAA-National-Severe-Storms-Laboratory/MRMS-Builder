@@ -169,6 +169,7 @@ def doGetBuilders(theConf):
   buildGUI = theConf.getBooleanAuto("GUI", "Build the WG display gui? (requires openGL libraries installed)", "yes", autoGUICheck)
   buildGUI2 = theConf.getBooleanAuto("GUI2", "Build the WG2 java display gui? (requires ant 1.9 and java)", "yes", autoGUI2Check)
   buildRAPIO = theConf.getBoolean("RAPIO", "Build RAPIO library?", "no")
+  rapiobuilder = addBuilder(bl, RAPIOBuild(), buildRAPIO)
 
   # Debate letting people control individual flags, because builds are chained and
   # when they break they get confused.
@@ -179,7 +180,6 @@ def doGetBuilders(theConf):
     buildWDSS2 | buildHydro)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(theConf, mrmsVersion, buildRAPIO), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
-  rapiobuilder = addBuilder(bl, RAPIOBuild(), buildRAPIO)
   # Build last since it's a RPM pig and can fail.  This way we can just rebuild it
   wgbuilder = addBuilder(bl, WGBuild(theConf, mrmsVersion), buildGUI)
   return bl

@@ -24,7 +24,10 @@ class buildHydro(Builder):
     hbase = target+"/"+HYDRO+"/"
     b.chdir(hbase)
     r = "./autogen.sh --prefix="+target+" --enable-shared "
-    if self.rapio:
+    # Conditional RAPIO algs
+    # Since we can layer builds, check if folder there
+    # because we might have built in a previous run
+    if os.path.isdir(target+"/RAPIO"):
       r += "--with-rapio "
     self.runBuildSetup(r)
     self.makeInstall()
