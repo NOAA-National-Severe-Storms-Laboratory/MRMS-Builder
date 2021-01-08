@@ -1,0 +1,24 @@
+# Toomey Try chaining containers
+# Adding to base/third party built container
+FROM localhost/mrms_c8s_algs
+
+# Install packages
+COPY packages/ /packages
+WORKDIR /packages
+RUN ./mrms_add_gui_centos8s.sh 
+
+# Copy prepared builder files to image
+# And build it
+COPY working/ /builder
+WORKDIR /builder
+
+# By running one command, we trim everything.
+# This cuts down on the 9 GB image (full giant source build)
+# Kinda wanna strip bin as well..another 450 mb or so
+# However if using in production we want debugging
+RUN python2 build.py configs/mrms20_add_gui.cfg &&\
+    rm -rf /BUILD/WDSS2
+
+# Make the binaries the default
+ENV PATH="/BUILD/bin:${PATH}"
+WORKDIR /BUILD/bin

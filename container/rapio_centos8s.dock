@@ -7,14 +7,14 @@ FROM centos:8
 # Install packages
 COPY packages/ /packages
 WORKDIR /packages
-RUN ./rapio_centos8.sh
+RUN ./rapio_centos8s.sh
 
 # Copy prepared builder files to image
 # And build it
 COPY working/ /builder
 WORKDIR /builder
 RUN python2 build.py configs/rapiobase.cfg &&\
-    rm -rf /BUILD/Third
+    rm -rf /BUILD/Third 
 # I want the source code
 #&&\
 #    rm -rf /BUILD/RAPIO

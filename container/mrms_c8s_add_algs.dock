@@ -1,0 +1,26 @@
+# Toomey Try chaining containers
+# Adding to base/third party built container
+FROM localhost/rapio8s
+
+# Install packages
+COPY packages/ /packages
+WORKDIR /packages
+RUN ./mrms_add_algs_centos8s.sh
+
+# Copy prepared builder files to image
+# And build it
+COPY working/ /builder
+WORKDIR /builder
+
+# By running one command, we trim everything.
+# This cuts down on the 9 GB image (full giant source build)
+# Kinda wanna strip bin as well..another 450 mb or so
+# However if using in production we want debugging
+RUN python2 build.py configs/mrms20_add_algs.cfg &&\
+    cp -r /BUILD/WDSS2/w2/w2config/ /root/w2config &&\
+    rm -rf /BUILD/WDSS2 &&\
+    rm -rf /BUILD/HMET
+
+# Make the binaries the default
+ENV PATH="/BUILD/bin:${PATH}"
+WORKDIR /BUILD/bin

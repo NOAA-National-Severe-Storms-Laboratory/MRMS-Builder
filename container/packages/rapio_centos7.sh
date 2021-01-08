@@ -29,6 +29,9 @@ yum install unzip xz-devel bzip2-devel -y
 # expat-devel (udunits requirement)
 yum install expat-devel libpng-devel openssl-devel -y
 
+# (image) The image plugin for RAPIO uses imagick
+dnf install GraphicsMagick-c++-devel -y
+
 # Stuff RAPIO doesn't really need, but the Third package does 
 # If we break it up base, rapio, algs, gui it should be here
 # (gdal)
