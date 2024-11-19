@@ -1,6 +1,6 @@
-# RAPIO Builder
+# MRMS Builder
 
-RAPIO Builder is a collection of python scripts and utilities for building RAPIO and MRMS on linux systems and in containers.  There's more in here than most people will ever use.  We use several packages with non-default compiler flags and settings so this builder handles that.  We also static chain the entire build since currently we handle having multiple builds on our systems and don't want them to step on each other.
+MRMS Builder is a collection of python scripts and utilities for building RAPIO and MRMS on linux systems and in containers.  There's more in here than most people will ever use.  We use several packages with non-default compiler flags and settings so this builder handles that.  We also static chain the entire build since currently we handle having multiple builds on our systems and don't want them to step on each other.
 
 ## Requirements
 Python
