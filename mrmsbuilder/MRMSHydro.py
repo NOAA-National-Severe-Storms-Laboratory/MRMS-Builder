@@ -72,6 +72,12 @@ class MRMSHydroBuild(BuilderGroup):
   def checkout(self, target, scriptroot, password, options):
     b.checkoutSVN("/MRMS_hydro/trunk", target+"/"+HYDRO, password, options)
 
+  def checkoutGIT(self, target, scriptroot, password, options):
+    gitssh = "-c core.sshCommand='ssh -i "+password+"'";
+    hydro = target+"/"+HYDRO
+    gitcommand = "git "+gitssh+" clone git@github.com:NOAA-National-Severe-Storms-Laboratory/MRMS-hydro.git  "+hydro
+    b.run(gitcommand)
+
   def checkoutPostGIT(self, target, scriptroot):
     b.run("mv HMET/src "+target+"/"+HYDRO)
     b.run("rm -rf HMET")

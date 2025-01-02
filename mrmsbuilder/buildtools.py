@@ -282,7 +282,7 @@ def checkoutSingle(child, command, password):
     # Warning on these strings.  They can't show up exactly in the svn output..possible future bug
     # Need more advanced coding to 100% make sure the checkout doesn't 'hit' any of these lines.  Works
     # at the moment
-    i = child.expect([u'Password: ',          # 0 
+    i = child.expect([u'[Pp]assword: ',          # 0 
                       u'Account cannot',      # 1
                       u'(yes/no)',            # 2
                       u'Unable to connect',   # 3 svn failure

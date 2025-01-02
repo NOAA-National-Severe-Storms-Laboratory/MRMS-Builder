@@ -157,6 +157,7 @@ class MRMSSevereBuild(BuilderGroup):
     """ Get the builders from this module """
     self.mrmsVersion = mrmsVersion
     self.ourDFlags = {}
+    self.theConf = theConf
     if self.mrmsVersion == "mrms12":
       self.rapio = False
     else:
@@ -194,6 +195,12 @@ class MRMSSevereBuild(BuilderGroup):
   def checkout(self, target, scriptroot, password, options):
     b.checkoutSVN("/WDSS2/trunk", target+"/"+WDSS2, password, options)
 
+  def checkoutGIT(self, target, scriptroot, password, options):
+    gitssh = "-c core.sshCommand='ssh -i "+password+"'";
+    w2 = target+"/"+WDSS2
+    gitcommand = "git "+gitssh+" clone git@github.com:NOAA-National-Severe-Storms-Laboratory/MRMS-WDSSII.git  "+w2
+    b.run(gitcommand)
+
   def checkoutPostGIT(self, target, scriptroot):
     b.run("mv WDSS2/src "+target+"/"+WDSS2)
     b.run("rm -rf WDSS2")
@@ -202,16 +209,32 @@ class MRMSSevereBuild(BuilderGroup):
     """ Build WDSS2 (MRMS_Severe) """
     print("\nBuilding WDSS2 (MRMS_Severe) libraries...")
 
+    # Note switching to cmake will vaporize the majority of
+    # our scripts here.
+    w2 = target+"/"+WDSS2
+    b.chdir(w2)
+    b.run("mkdir BUILD")
+    b.chdir(w2+"/BUILD")
+    b.run("cmake .. -DCMAKE_INSTALL_PREFIX=../..");
+    cpus = self.theConf.getJobs()
+    if (cpus == ""):
+      b.run("make install")
+    else:
+      b.run("make -j"+cpus+" install")
+
+    #r = self.autogen("./autogen.sh", target)
+    # OK, just try to cmake build it.
+
     # Copy m4 into the location needed
-    relativePath = BuilderGroup.setupWDSS2M4(self, target, WDSS2)
+    #relativePath = BuilderGroup.setupWDSS2M4(self, target, WDSS2)
 
     # Build all builders...
-    for build in self.myBuilders:
-      build.build(target)
+    #for build in self.myBuilders:
+    #  build.build(target)
 
     # Put a check ldd script into the bin directory
     # Maybe this shouldn't be in this code here
-    b.run("cp "+relativePath+"/check.py "+target+"/bin/check.py")
+    #b.run("cp "+relativePath+"/check.py "+target+"/bin/check.py")
 
 # Run main
 if __name__ == "__main__":

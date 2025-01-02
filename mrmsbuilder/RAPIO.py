@@ -27,6 +27,9 @@ class buildRAPIO(Builder):
     r = r + " --enable-shared"
 
     self.runBuildSetup(r)
+
+    # Have to build in the BUILD directory, right?
+    b.chdir(rapio+"/BUILD")
     self.makeInstall()
 
 class RAPIOBuild(BuilderGroup):
@@ -53,6 +56,12 @@ class RAPIOBuild(BuilderGroup):
     print("Trying to pull RAPIO from git repository...")
     b.chdir(tbase)
     b.run("git clone "+theURL)
+
+  def checkoutGIT(self, target, scriptroot, password, options):
+    gitssh = "-c core.sshCommand='ssh -i "+password+"'";
+    rapio = target+"/RAPIO"
+    gitcommand = "git "+gitssh+" clone git@github.com:retoomey/RAPIO.git "+rapio
+    b.run(gitcommand)
 
   def build(self, target):
     """ Build RAPIO """

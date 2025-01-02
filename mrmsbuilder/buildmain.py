@@ -244,6 +244,21 @@ def doCheckoutSVN(aFolder, scriptroot, aBuilderList):
   print(blue+"Check out success."+coff)
   return [user, revision]
 
+def doCheckoutNSSLGIT(checkmode, aFolder, scriptroot, aBuilderList):
+  """ Checkout the code repository from NSSL GITHUB"""
+  #gitcommand = "git clone "+checkmode+" MRMS-GIT"
+  print(blue+"Checking out code from GIT... "+coff)
+  gitkey = theConf.getString("GITKEY", "", "")
+  if (gitkey == ""):
+    print("You need to set a private key location")
+    exit()
+  print("Git key location: "+gitkey)
+  print(blue+"Checking out code..."+coff)
+  for bg in aBuilderList:
+    bg.checkoutGIT(aFolder, scriptroot, gitkey, "")
+  print(blue+"Check out success."+coff)
+  return ["none", ""]
+
 def doCheckoutGIT(checkmode, aFolder, scriptroot, aBuilderList):
   """ Checkout the code repository from GIT """
   gitcommand = "git clone "+checkmode+" MRMS-GIT"
@@ -283,8 +298,11 @@ def doCheckout(aFolder, scriptroot, aBuilderList):
   if (checkmode == "SVN" or checkmode == "svn"):
     print("--->SVN checkout-----")
     return doCheckoutSVN(aFolder, scriptroot, aBuilderList)
+  elif (checkmode == "GIT" or checkmode == "git"):
+    print("--->GIT checkout (NSSL GITHUB)-----")
+    return doCheckoutNSSLGIT(checkmode, aFolder, scriptroot, aBuilderList)
   else:
-    print("--->GIT checkout-----")
+    print("--->GIT checkout (NCEP)-----")
     return doCheckoutGIT(checkmode, aFolder, scriptroot, aBuilderList)
 
 def doMarkFinishedBuild(aFolder):
