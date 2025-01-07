@@ -250,7 +250,7 @@ def doCheckoutNSSLGIT(checkmode, aFolder, scriptroot, aBuilderList):
   print(blue+"Checking out code from GIT... "+coff)
   gitkey = theConf.getString("GITKEY", "", "")
   if (gitkey == ""):
-    print("You need to set a private key location")
+    print("You need to set a private key location in your default.cfg GITKEY=/yourpath/yourkey")
     exit()
   print("Git key location: "+gitkey)
   print(blue+"Checking out code..."+coff)

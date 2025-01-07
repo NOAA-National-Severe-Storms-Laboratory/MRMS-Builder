@@ -58,6 +58,7 @@ class MRMSHydroBuild(BuilderGroup):
   def __init__(self, theConf, mrmsVersion, r):
     """ Get the builders from this module """
     self.mrmsVersion = mrmsVersion
+    self.theConf = theConf
     if self.mrmsVersion == "mrms12":
       self.rapio = False
     else:
@@ -86,14 +87,27 @@ class MRMSHydroBuild(BuilderGroup):
     """ Build HYDRO (MRMS_Hydro) """
     print("\nBuilding HYDRO (MRMS_Hydro) libraries...")
 
+    # Note switching to cmake will vaporize the majority of
+    # our scripts here.
+    hydro = target+"/"+HYDRO
+    b.chdir(hydro)
+    b.run("mkdir BUILD")
+    b.chdir(hydro+"/BUILD")
+    b.run("cmake .. -DCMAKE_INSTALL_PREFIX=../..");
+    cpus = self.theConf.getJobs()
+    if (cpus == ""):
+      b.run("make install")
+    else:
+      b.run("make -j"+cpus+" install")
+
     # Use our new m4 to static link third
     #b.runOptional("rm "+target+"/"+WDSS2+"/config/w2.m4")
     #relativePath = os.path.dirname(os.path.realpath(__file__))
     #b.run("cp "+relativePath+"/newm4.m4 "+target+"/"+WDSS2+"/config/newm4.m4")
 
     # Build all builders...
-    for build in self.myBuilders:
-      build.build(target)
+    #for build in self.myBuilders:
+    #  build.build(target)
 
     # Put a check ldd script into the bin directory
     # Maybe this shouldn't be in this code here
