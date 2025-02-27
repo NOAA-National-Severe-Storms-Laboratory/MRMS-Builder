@@ -1,7 +1,20 @@
 #!/bin/sh
-# So many python versions, so many systems...
-# Grab python in the path and call build.py
-# You can do it by hand too with whatever python you want
-YOURPYTHON=`which python`
+# Find the best available Python version
+
+# Try to find python3 first
+if command -v python3 >/dev/null 2>&1; then
+    YOURPYTHON=$(command -v python3)
+# If python3 is not found, try python2
+elif command -v python2 >/dev/null 2>&1; then
+    YOURPYTHON=$(command -v python2)
+# If python2 is not found, try generic 'python'
+elif command -v python >/dev/null 2>&1; then
+    YOURPYTHON=$(command -v python)
+else
+    echo "Error: No suitable Python interpreter found (need python3, python2, or python)"
+    exit 1
+fi
+
 echo "Using python at ${YOURPYTHON}"
-${YOURPYTHON} ./build.py $@
+exec "${YOURPYTHON}" ./build.py "$@"
+
