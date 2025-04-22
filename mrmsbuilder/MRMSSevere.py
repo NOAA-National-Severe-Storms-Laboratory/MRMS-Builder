@@ -158,7 +158,7 @@ class MRMSSevereBuild(BuilderGroup):
     self.mrmsVersion = mrmsVersion
     self.ourDFlags = {}
     self.theConf = theConf
-    selt.gui = gui
+    self.gui = gui
     if self.mrmsVersion == "mrms12":
       self.rapio = False
     else:
