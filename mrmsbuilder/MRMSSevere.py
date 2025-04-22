@@ -153,11 +153,12 @@ class buildW2tools(Builder):
 
 class MRMSSevereBuild(BuilderGroup):
   """ Build all of MRMS Severe (WDSS2) """
-  def __init__(self, theConf, mrmsVersion, r):
+  def __init__(self, theConf, mrmsVersion, r, gui):
     """ Get the builders from this module """
     self.mrmsVersion = mrmsVersion
     self.ourDFlags = {}
     self.theConf = theConf
+    selt.gui = gui
     if self.mrmsVersion == "mrms12":
       self.rapio = False
     else:
@@ -215,7 +216,10 @@ class MRMSSevereBuild(BuilderGroup):
     b.chdir(w2)
     b.run("mkdir BUILD")
     b.chdir(w2+"/BUILD")
-    b.run("cmake .. -DCMAKE_INSTALL_PREFIX=../..");
+    if (self.gui):
+      b.run("cmake .. -DCMAKE_INSTALL_PREFIX=../.. -DBUILD_GUI=ON");
+    else:
+      b.run("cmake .. -DCMAKE_INSTALL_PREFIX=../.. -DBUILD_GUI=OFF");
     cpus = self.theConf.getJobs()
     if (cpus == ""):
       b.run("make install")

@@ -176,12 +176,13 @@ def doGetBuilders(theConf):
   thirdparty = addBuilder(bl, ThirdPartyBuild(theConf, mrmsVersion), buildThird)
   rapiobuilder = addBuilder(bl, RAPIOBuild(), buildRAPIO)
 
-  mrmssevere = addBuilder(bl, MRMSSevereBuild(theConf, mrmsVersion, buildRAPIO), 
+  mrmssevere = addBuilder(bl, MRMSSevereBuild(theConf, mrmsVersion, buildRAPIO, buildGUI), 
     buildWDSS2 | buildHydro)
   mrmshydro = addBuilder(bl, MRMSHydroBuild(theConf, mrmsVersion, buildRAPIO), buildHydro)
   wg2builder = addBuilder(bl, WG2Build(), buildGUI2)
   # Build last since it's a RPM pig and can fail.  This way we can just rebuild it
-  wgbuilder = addBuilder(bl, WGBuild(theConf, mrmsVersion), buildGUI)
+  # CMake does so much our scripts are deprecating.
+  #wgbuilder = addBuilder(bl, WGBuild(theConf, mrmsVersion), buildGUI)
   return bl
 
 def doPreCheckoutConfig(aBuilderList, theConf):
